@@ -30,24 +30,26 @@ router.post('/', async (req: Request, res: Response) => {
       products: rawProducts, paymentMethod, deliveryDate, deliverySlot,
     } = req.body;
 
-    // Validate pincode is in delivery area
-    const area = await DeliveryArea.findOne({ pincode, isActive: true });
-    if (!area) {
-      return res.status(400).json({ success: false, message: 'Delivery not available for this pincode.' });
+    // Validate pincode is in delivery area (only if areas have been configured)
+    const totalAreas = await DeliveryArea.countDocuments({ isActive: true });
+    if (totalAreas > 0) {
+      const area = await DeliveryArea.findOne({ pincode, isActive: true });
+      if (!area) {
+        return res.status(400).json({ success: false, message: 'Delivery not available for this pincode.' });
+      }
     }
 
-    // Validate slot capacity
+    // Validate slot capacity (only if slots have been configured)
     const slot = await DeliverySlot.findOne({ label: deliverySlot, isActive: true });
-    if (!slot) {
-      return res.status(400).json({ success: false, message: 'Invalid delivery slot.' });
-    }
-    const slotOrderCount = await Order.countDocuments({
-      deliveryDate,
-      deliverySlot,
-      orderStatus: { $nin: ['cancelled'] },
-    });
-    if (slotOrderCount >= slot.maxOrders) {
-      return res.status(400).json({ success: false, message: 'This delivery slot is full. Please choose another.' });
+    if (slot) {
+      const slotOrderCount = await Order.countDocuments({
+        deliveryDate,
+        deliverySlot,
+        orderStatus: { $nin: ['cancelled'] },
+      });
+      if (slotOrderCount >= slot.maxOrders) {
+        return res.status(400).json({ success: false, message: 'This delivery slot is full. Please choose another.' });
+      }
     }
 
     // Enrich products

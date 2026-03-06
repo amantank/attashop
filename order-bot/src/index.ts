@@ -18,7 +18,13 @@ dotenv.config();
 const TOKEN = process.env.ORDER_BOT_TOKEN || '';
 const API = process.env.BACKEND_URL || 'http://backend:5000';
 
-const bot = new TelegramBot(TOKEN, { polling: true });
+const bot = new TelegramBot(TOKEN, {
+  polling: {
+    interval: 300,
+    autoStart: true,
+    params: { timeout: 10 },
+  },
+});
 
 // ── Health check server (for Docker networking) ───────────
 const app = express();

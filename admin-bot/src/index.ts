@@ -10,7 +10,13 @@ dotenv.config();
 const TOKEN = process.env.ADMIN_BOT_TOKEN || '';
 const API = process.env.BACKEND_URL || 'http://backend:5000';
 
-const bot = new TelegramBot(TOKEN, { polling: true });
+const bot = new TelegramBot(TOKEN, {
+  polling: {
+    interval: 300,
+    autoStart: true,
+    params: { timeout: 10 },
+  },
+});
 
 // ── Wizard state ──────────────────────────────────────────
 type Step = { step: string; data: Record<string, unknown> };
@@ -47,7 +53,7 @@ bot.onText(/\/help/, msg => {
     '/set\\_delivery\\_area – Manage delivery pincodes',
     '/set\\_delivery\\_charge – Configure delivery charges',
     '/set\\_delivery\\_slots – Manage delivery slots',
-    '/analytics – View today\\'s analytics',
+    `/analytics – View today\'s analytics`,
   ].join('\n'), { parse_mode: 'Markdown' });
 });
 

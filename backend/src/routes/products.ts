@@ -101,7 +101,7 @@ router.put('/:id', upload.single('image'), async (req: Request, res: Response) =
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
     const fields = ['name', 'nameHi', 'description', 'descriptionHi', 'discount', 'stock', 'categoryId', 'unitType', 'isFeatured'];
-    fields.forEach(f => { if (req.body[f] !== undefined) (product as Record<string, unknown>)[f] = req.body[f]; });
+    fields.forEach(f => { if (req.body[f] !== undefined) (product as unknown as Record<string, unknown>)[f] = req.body[f]; });
 
     if (req.body.price) {
       product.price = Number(req.body.price);
