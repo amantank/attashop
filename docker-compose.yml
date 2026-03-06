@@ -1,0 +1,87 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: attashop-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: attashop
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - attashop-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: attashop-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/attashop
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      - mongo
+    networks:
+      - attashop-net
+
+  admin-bot:
+    build:
+      context: ./admin-bot
+      dockerfile: Dockerfile
+    container_name: attashop-admin-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BACKEND_URL: http://backend:5000
+    depends_on:
+      - backend
+    networks:
+      - attashop-net
+
+  order-bot:
+    build:
+      context: ./order-bot
+      dockerfile: Dockerfile
+    container_name: attashop-order-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      BACKEND_URL: http://backend:5000
+    depends_on:
+      - backend
+    networks:
+      - attashop-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: attashop-frontend
+    restart: unless-stopped
+    networks:
+      - attashop-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: attashop-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - uploads:/app/uploads
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - attashop-net
+
+volumes:
+  mongo_data:
+  uploads:
+
+networks:
+  attashop-net:
+    driver: bridge

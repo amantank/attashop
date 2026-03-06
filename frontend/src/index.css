@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --c-amber:    #f59e0b;
+    --c-amber-d:  #d97706;
+    --c-amber-l:  #fef3c7;
+    --c-saffron:  #f97316;
+    --c-green:    #16a34a;
+    --c-surface:  #fafaf7;
+    --c-card:     #ffffff;
+    --c-text:     #1c1917;
+    --c-muted:    #78716c;
+    --c-border:   #e7e5e4;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-[#fafaf7] text-stone-900 antialiased;
+    font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+  }
+
+  /* Hindi font class */
+  .font-hindi { font-family: 'Noto Sans Devanagari', 'Inter', sans-serif; }
+  .font-sans  { font-family: 'Inter', system-ui, sans-serif; }
+
+  img { @apply max-w-full; }
+}
+
+@layer components {
+  /* ── Buttons ───────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2
+           px-5 py-2.5 rounded-xl font-semibold text-sm
+           transition-all duration-200 cursor-pointer select-none
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400;
+  }
+  .btn-primary {
+    @apply btn bg-amber-500 text-white
+           hover:bg-amber-600 active:scale-[0.97]
+           shadow-md hover:shadow-amber-200;
+  }
+  .btn-outline {
+    @apply btn border-2 border-amber-500 text-amber-700
+           hover:bg-amber-50 active:scale-[0.97];
+  }
+  .btn-ghost {
+    @apply btn text-stone-600 hover:bg-stone-100 active:scale-[0.97];
+  }
+  .btn-danger {
+    @apply btn bg-red-500 text-white hover:bg-red-600 active:scale-[0.97];
+  }
+  .btn-sm { @apply btn px-3 py-1.5 text-xs rounded-lg; }
+
+  /* ── Cards ─────────────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-2xl shadow-sm border border-stone-100
+           transition-shadow hover:shadow-md;
+  }
+
+  /* ── Pill/Badge ─────────────────────────────────────────── */
+  .pill {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full
+           text-xs font-semibold;
+  }
+  .pill-amber  { @apply pill bg-amber-100 text-amber-700; }
+  .pill-green  { @apply pill bg-green-100 text-green-700; }
+  .pill-red    { @apply pill bg-red-100 text-red-700; }
+  .pill-blue   { @apply pill bg-blue-100 text-blue-700; }
+  .pill-gray   { @apply pill bg-stone-100 text-stone-500; }
+
+  /* ── Form inputs ────────────────────────────────────────── */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-stone-200
+           bg-white text-stone-900 placeholder:text-stone-400
+           focus:outline-none focus:border-amber-400 focus:ring-2
+           focus:ring-amber-100 transition-all text-sm;
+  }
+  .label { @apply block text-sm font-semibold text-stone-700 mb-1.5; }
+
+  /* ── Section wrapper ────────────────────────────────────── */
+  .section { @apply py-10 px-4 max-w-7xl mx-auto; }
+
+  /* ── Gradient text ──────────────────────────────────────── */
+  .gradient-text {
+    @apply bg-gradient-to-r from-amber-500 to-orange-500
+           bg-clip-text text-transparent;
+  }
+
+  /* ── Hero gradient background ───────────────────────────── */
+  .hero-bg {
+    background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 40%, #fde68a 100%);
+  }
+
+  /* ── Grain texture overlay ──────────────────────────────── */
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* ── Skeleton loading ───────────────────────────────────── */
+  .skeleton {
+    @apply bg-stone-200 rounded-xl animate-pulse;
+  }
+
+  /* ── Glassmorphism card ─────────────────────────────────── */
+  .glass {
+    @apply backdrop-blur-md bg-white/70 border border-white/40 shadow-xl;
+  }
+
+  /* ── Category pill active ───────────────────────────────── */
+  .cat-pill {
+    @apply flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold
+           border-2 transition-all duration-150 cursor-pointer;
+  }
+  .cat-pill-active {
+    @apply cat-pill border-amber-500 bg-amber-500 text-white shadow-md;
+  }
+  .cat-pill-inactive {
+    @apply cat-pill border-stone-200 bg-white text-stone-600 hover:border-amber-400;
+  }
+
+  /* ── Step stepper ───────────────────────────────────────── */
+  .stepper-btn {
+    @apply w-8 h-8 rounded-full border-2 border-amber-400 bg-amber-50
+           flex items-center justify-center text-amber-700 font-bold text-lg
+           hover:bg-amber-100 transition active:scale-90;
+  }
+
+  /* ── Slot card ──────────────────────────────────────────── */
+  .slot-card {
+    @apply p-3 rounded-xl border-2 cursor-pointer transition-all text-center text-sm font-semibold;
+  }
+  .slot-active   { @apply slot-card border-amber-500 bg-amber-50 text-amber-700; }
+  .slot-inactive { @apply slot-card border-stone-200 bg-white text-stone-600 hover:border-amber-300; }
+  .slot-full     { @apply slot-card border-stone-100 bg-stone-50 text-stone-400 cursor-not-allowed; }
+}
+
+@layer utilities {
+  .bg-surface { background-color: var(--c-surface); }
+  .scrollbar-hide { scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Fade-in animation */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-up { animation: fadeInUp 0.4s ease forwards; }
+
+  /* Bounce-in for success icon */
+  @keyframes bounceIn {
+    0%   { transform: scale(0.5); opacity: 0; }
+    70%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .animate-bounce-in { animation: bounceIn 0.6s ease forwards; }
+
+  /* Shimmer for skeleton */
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+  .shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
