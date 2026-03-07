@@ -5,6 +5,7 @@ import { Minus, Plus, ShoppingCart, Bell, Check } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { getProduct } from '../api/products';
 import { createSubscription } from '../api/subscriptions';
+import { placeOrder } from '../api/orders';
 import { useCartStore } from '../store/cartStore';
 import { Loader, ErrorMessage } from '../components/Loader';
 import toast from 'react-hot-toast';
@@ -78,6 +79,7 @@ export default function ProductDetailPage() {
     if (subPincode.length !== 6) { toast.error('Enter a valid 6-digit pincode'); return; }
     setSubLoading(true);
     try {
+      // Create Subscription
       await createSubscription({
         customerName: subName,
         phoneNumber: subPhone,
@@ -90,7 +92,27 @@ export default function ProductDetailPage() {
         frequency,
         customDays: frequency === 'custom' ? customDays : undefined,
         paymentMethod: 'cod', // Hardcoded COD for native product page subscriptions for now
-      });toast.success(lang === 'hi' ? 'सब्सक्रिप्शन बना दिया गया!' : 'Subscription created!');
+      });
+
+      // Place initial Order for today
+      await placeOrder({
+        customerName: subName,
+        phoneNumber: subPhone,
+        address: subAddress,
+        pincode: subPincode,
+        products: [
+          {
+            productId: product.productId,
+            variantId: selectedVariant?.variantId,
+            quantity,
+          }
+        ],
+        paymentMethod: 'cod',
+        deliveryDate: new Date().toISOString().split('T')[0],
+        deliverySlot: 'Anytime',
+      });
+
+      toast.success(lang === 'hi' ? 'सब्सक्रिप्शन बना दिया गया!' : 'Subscription created!');
       navigate('/subscriptions');
     } catch {
       toast.error(t('error'));
