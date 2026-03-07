@@ -79,7 +79,7 @@ export interface Order {
 }
 
 // ─── Subscription ────────────────────────────────────────────────────────────
-export type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly';
+export type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly' | 'custom';
 export type SubscriptionStatus = 'active' | 'paused' | 'cancelled';
 
 export interface Subscription {
@@ -95,8 +95,9 @@ export interface Subscription {
   size?: string;
   quantity: number;
   frequency: SubscriptionFrequency;
+  customDays?: number;
   nextDeliveryDate: string;
-  paymentMethod: string;
+  paymentMethod: PaymentMethod;
   subscriptionStatus: SubscriptionStatus;
   createdAt: string;
 }

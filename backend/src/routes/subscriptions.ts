@@ -10,12 +10,17 @@ router.post('/', async (req: Request, res: Response) => {
     const {
       customerName, phoneNumber, address, pincode,
       productId, productName, variantId, size, quantity,
-      frequency, paymentMethod,
+      frequency, customDays, paymentMethod,
     } = req.body;
 
     // Calculate first delivery date based on frequency
     const next = new Date();
-    const freqDays = frequency === 'weekly' ? 7 : frequency === 'biweekly' ? 14 : 30;
+    let freqDays = 30;
+    if (frequency === 'weekly') freqDays = 7;
+    else if (frequency === 'biweekly') freqDays = 14;
+    else if (frequency === 'monthly') freqDays = 30;
+    else if (frequency === 'custom' && customDays) freqDays = Number(customDays);
+
     next.setDate(next.getDate() + freqDays);
 
     const sub = new Subscription({
@@ -24,6 +29,7 @@ router.post('/', async (req: Request, res: Response) => {
       productId, productName, variantId, size,
       quantity: Number(quantity),
       frequency,
+      customDays: frequency === 'custom' ? Number(customDays) : undefined,
       nextDeliveryDate: next,
       paymentMethod,
       subscriptionStatus: 'active',

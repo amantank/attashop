@@ -78,8 +78,8 @@ export default function SubscriptionsPage() {
                 <h3 className="font-bold text-stone-900">{sub.productName}</h3>
                 {sub.size && <p className="text-xs text-stone-400 mt-0.5">{sub.size} · {sub.quantity} {t('pcs')}</p>}
                 <div className="flex items-center gap-2 mt-2">
-                  <span className={`pill text-xs ${sub.frequency === 'weekly' ? 'pill-amber' : sub.frequency === 'biweekly' ? 'pill-blue' : 'pill-green'}`}>
-                    {sub.frequency === 'weekly' ? t('weekly') : sub.frequency === 'biweekly' ? t('biweekly') : t('monthly')}
+                  <span className={`pill text-xs ${sub.frequency === 'weekly' ? 'pill-amber' : sub.frequency === 'biweekly' ? 'pill-blue' : sub.frequency === 'custom' ? 'pill-purple' : 'pill-green'}`}>
+                    {sub.frequency === 'weekly' ? t('weekly') : sub.frequency === 'biweekly' ? t('biweekly') : sub.frequency === 'custom' ? `Every ${sub.customDays} days` : t('monthly')}
                   </span>
                   <span className="pill-gray text-xs capitalize">{sub.subscriptionStatus}</span>
                 </div>

@@ -19,7 +19,8 @@ interface CartState {
   deliveryCharge: number;
 
   subscribeItems: string[];
-  subFrequency: 'weekly' | 'biweekly' | 'monthly';
+  subFrequency: 'weekly' | 'biweekly' | 'monthly' | 'custom';
+  subCustomDays?: number;
 
   // Actions
   addItem: (item: CartItem) => void;
@@ -33,7 +34,8 @@ interface CartState {
   setDeliveryCharge: (charge: number) => void;
   repeatOrder: (items: CartItem[]) => void;
   toggleSubscribeItem: (productId: string) => void;
-  setSubFrequency: (freq: 'weekly' | 'biweekly' | 'monthly') => void;
+  setSubFrequency: (freq: 'weekly' | 'biweekly' | 'monthly' | 'custom') => void;
+  setSubCustomDays: (days: number) => void;
 
   // Computed helpers
   itemCount: () => number;
@@ -55,6 +57,7 @@ export const useCartStore = create<CartState>()(
       deliveryCharge: 0,
       subscribeItems: [],
       subFrequency: 'weekly',
+      subCustomDays: undefined,
 
       addItem: (item) =>
         set(state => {
@@ -103,7 +106,11 @@ export const useCartStore = create<CartState>()(
           else next.add(productId);
           return { subscribeItems: Array.from(next) };
         }),
-      setSubFrequency: (freq) => set({ subFrequency: freq }),
+      setSubFrequency: (freq) =>
+        set({ subFrequency: freq }),
+
+      setSubCustomDays: (days) =>
+        set({ subCustomDays: days }),
 
       itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
       subtotal: () => get().items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),

@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly';
+export type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly' | 'custom';
 export type SubscriptionStatus = 'active' | 'paused' | 'cancelled';
 
 export interface ISubscription extends Document {
@@ -15,6 +15,7 @@ export interface ISubscription extends Document {
   size?: string;
   quantity: number;
   frequency: SubscriptionFrequency;
+  customDays?: number; // Only populated if frequency === 'custom'
   nextDeliveryDate: Date;
   paymentMethod: string;
   subscriptionStatus: SubscriptionStatus;
@@ -35,9 +36,10 @@ const SubscriptionSchema = new Schema<ISubscription>(
     quantity: { type: Number, required: true },
     frequency: {
       type: String,
-      enum: ['weekly', 'biweekly', 'monthly'],
+      enum: ['weekly', 'biweekly', 'monthly', 'custom'],
       required: true,
     },
+    customDays: { type: Number, min: 1, max: 90 }, // 1 to 90 days allowed for custom frequency
     nextDeliveryDate: { type: Date, required: true },
     paymentMethod: { type: String, required: true },
     subscriptionStatus: {

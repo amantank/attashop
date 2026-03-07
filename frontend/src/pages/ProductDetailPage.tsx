@@ -30,6 +30,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [subscribeMode, setSubscribeMode] = useState(false);
   const [frequency, setFrequency] = useState<SubscriptionFrequency>('weekly');
+  const [customDays, setCustomDays] = useState<number>(30); // Default to 30
   const [subName, setSubName] = useState(customerInfo.name || '');
   const [subPhone, setSubPhone] = useState(customerInfo.phone || '');
   const [subAddress, setSubAddress] = useState(customerInfo.address || '');
@@ -87,9 +88,9 @@ export default function ProductDetailPage() {
         variantId: selectedVariant?.variantId,
         quantity,
         frequency,
-        paymentMethod: 'cod' as PaymentMethod,
-      });
-      toast.success(lang === 'hi' ? 'सब्सक्रिप्शन बना दिया गया!' : 'Subscription created!');
+        customDays: frequency === 'custom' ? customDays : undefined,
+        paymentMethod: 'cod', // Hardcoded COD for native product page subscriptions for now
+      });toast.success(lang === 'hi' ? 'सब्सक्रिप्शन बना दिया गया!' : 'Subscription created!');
       navigate('/subscriptions');
     } catch {
       toast.error(t('error'));
@@ -98,10 +99,11 @@ export default function ProductDetailPage() {
     }
   };
 
-  const freqOptions: { value: SubscriptionFrequency; label: string }[] = [
-    { value: 'weekly',   label: t('weekly') },
-    { value: 'biweekly', label: t('biweekly') },
-    { value: 'monthly',  label: t('monthly') },
+  const freqOptions: { label: string; value: SubscriptionFrequency }[] = [
+    { label: t('weekly'), value: 'weekly' },
+    { label: t('biweekly'), value: 'biweekly' },
+    { label: t('monthly'), value: 'monthly' },
+    { label: 'Custom', value: 'custom' }
   ];
 
   return (
@@ -196,7 +198,7 @@ export default function ProductDetailPage() {
             {subscribeMode && (
               <div className="mt-3 animate-fade-in-up space-y-3">
                 <p className="label">{t('subscriptionPlan')}</p>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {freqOptions.map(opt => (
                     <button
                       key={opt.value}
@@ -211,6 +213,19 @@ export default function ProductDetailPage() {
                     </button>
                   ))}
                 </div>
+                {frequency === 'custom' && (
+                  <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 animate-fade-in flex items-center gap-3">
+                    <span className="text-sm text-stone-600 font-medium">Deliver every</span>
+                    <input 
+                      type="number" min="1" max="90" 
+                      className="input w-20 py-1.5 px-3 text-center !text-sm"
+                      value={customDays || ''}
+                      placeholder="e.g. 8"
+                      onChange={(e) => setCustomDays(parseInt(e.target.value) || 0)}
+                    />
+                    <span className="text-sm text-stone-600 font-medium">days</span>
+                  </div>
+                )}
                 <div className="border-t border-amber-200 pt-3 space-y-2">
                   <p className="label text-xs text-stone-500">Delivery Details</p>
                   <div className="grid grid-cols-2 gap-2">

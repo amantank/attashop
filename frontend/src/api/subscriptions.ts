@@ -11,7 +11,8 @@ export interface CreateSubscriptionPayload {
   variantId?: string;
   quantity: number;
   frequency: SubscriptionFrequency;
-  paymentMethod: PaymentMethod | string;
+  customDays?: number;
+  paymentMethod: PaymentMethod;
   deliverySlot?: string;
 }
 

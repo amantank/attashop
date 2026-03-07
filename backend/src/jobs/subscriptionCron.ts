@@ -11,8 +11,11 @@ function addDays(date: Date, days: number): Date {
   return d;
 }
 
-function frequencyDays(freq: string): number {
-  return freq === 'weekly' ? 7 : freq === 'biweekly' ? 14 : 30;
+function frequencyDays(sub: any): number {
+  if (sub.frequency === 'weekly') return 7;
+  if (sub.frequency === 'biweekly') return 14;
+  if (sub.frequency === 'custom' && sub.customDays) return sub.customDays;
+  return 30; // fallback or monthly
 }
 
 export function startSubscriptionCron(): void {
@@ -80,7 +83,7 @@ export function startSubscriptionCron(): void {
         await order.save();
 
         // Update nextDeliveryDate
-        sub.nextDeliveryDate = addDays(today, frequencyDays(sub.frequency));
+        sub.nextDeliveryDate = addDays(today, frequencyDays(sub));
         await sub.save();
 
         console.log(`✅ Subscription order created: ${order.orderId}`);

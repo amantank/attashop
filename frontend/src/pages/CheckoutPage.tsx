@@ -19,13 +19,12 @@ export default function CheckoutPage() {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const {
-    items, subtotal, deliveryCharge, setDeliveryCharge, total,
-    customerInfo, setCustomerInfo,
-    deliveryDate, setDeliveryDate,
-    deliverySlot, setDeliverySlot,
-    paymentMethod, setPaymentMethod,
-    subscribeItems, toggleSubscribeItem, subFrequency, setSubFrequency,
-    clearCart,
+    items, itemCount, subtotal, total, deliveryCharge,
+    customerInfo, deliveryDate, deliverySlot, paymentMethod,
+    subscribeItems, subFrequency, subCustomDays,
+    setCustomerInfo, setDeliveryDate, setDeliverySlot,
+    setPaymentMethod, clearCart, toggleSubscribeItem,
+    setSubFrequency, setSubCustomDays, setDeliveryCharge
   } = useCartStore();
 
   const [slots, setSlots] = useState<DeliverySlot[]>([]);
@@ -105,6 +104,7 @@ export default function CheckoutPage() {
             variantId: item.variantId,
             quantity: item.quantity,
             frequency: subFrequency,
+            customDays: subFrequency === 'custom' ? (subCustomDays || 30) : undefined,
             paymentMethod,
           });
         } catch { /* silent */ }
@@ -223,18 +223,31 @@ export default function CheckoutPage() {
               ))}
             </div>
             {subscribeItems.length > 0 && (
-              <div className="mt-4">
+              <div className="mt-4 animate-fade-in-up">
                 <p className="label mb-2">Delivery Frequency</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['weekly','biweekly','monthly'] as SubscriptionFrequency[]).map(f => (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(['weekly','biweekly','monthly','custom'] as SubscriptionFrequency[]).map(f => (
                     <button key={f} onClick={() => setSubFrequency(f)}
                       className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
                         subFrequency === f ? 'border-amber-500 bg-amber-500 text-white' : 'border-stone-200 bg-white text-stone-600'
                       }`}>
-                      {f === 'weekly' ? 'Weekly' : f === 'biweekly' ? 'Every 2 Weeks' : 'Monthly'}
+                      {f === 'weekly' ? 'Weekly' : f === 'biweekly' ? 'Every 2 Weeks' : f === 'monthly' ? 'Monthly' : 'Custom'}
                     </button>
                   ))}
                 </div>
+                {subFrequency === 'custom' && (
+                  <div className="mt-3 bg-stone-50 p-3 rounded-xl border border-stone-200 animate-fade-in flex items-center gap-3">
+                    <span className="text-sm text-stone-600 font-medium">Deliver every</span>
+                    <input 
+                      type="number" min="1" max="90" 
+                      className="input w-20 py-1.5 px-3 text-center !text-sm"
+                      value={subCustomDays || ''}
+                      placeholder="e.g. 8"
+                      onChange={(e) => setSubCustomDays(parseInt(e.target.value) || 0)}
+                    />
+                    <span className="text-sm text-stone-600 font-medium">days</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
