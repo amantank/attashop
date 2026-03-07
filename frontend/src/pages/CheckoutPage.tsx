@@ -4,7 +4,8 @@ import { useCartStore } from '../store/cartStore';
 import { useLanguage } from '../context/LanguageContext';
 import { placeOrder } from '../api/orders';
 import { getSlotAvailability, calculateDeliveryCharge } from '../api/delivery';
-import type { PaymentMethod, DeliverySlot } from '../types';
+import { createSubscription } from '../api/subscriptions';
+import type { PaymentMethod, DeliverySlot, SubscriptionFrequency } from '../types';
 import toast from 'react-hot-toast';
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: string }[] = [
@@ -29,6 +30,8 @@ export default function CheckoutPage() {
   const [slots, setSlots] = useState<DeliverySlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [subscribeItems, setSubscribeItems] = useState<Set<string>>(new Set());
+  const [subFrequency, setSubFrequency] = useState<SubscriptionFrequency>('weekly');
   const sub = subtotal();
 
   // Redirect if cart empty
@@ -89,6 +92,24 @@ export default function CheckoutPage() {
         deliverySlot,
       });
       clearCart();
+      // Create subscriptions for toggled items
+      const subItems = items.filter(i => subscribeItems.has(i.productId));
+      for (const item of subItems) {
+        try {
+          await createSubscription({
+            customerName: customerInfo.name,
+            phoneNumber: customerInfo.phone,
+            address: customerInfo.address,
+            pincode: customerInfo.pincode,
+            productId: item.productId,
+            productName: item.productName,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            frequency: subFrequency,
+            paymentMethod,
+          });
+        } catch { /* silent */ }
+      }
       navigate(`/order-confirmation/${order.orderId}`);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -181,6 +202,45 @@ export default function CheckoutPage() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+
+          {/* Subscription */}
+          <div className="card p-5">
+            <h2 className="font-extrabold text-stone-800 mb-1">🔁 Subscribe for Regular Delivery</h2>
+            <p className="text-xs text-stone-400 mb-4">Auto-deliver any item on a schedule — cancel anytime.</p>
+            <div className="space-y-3">
+              {items.map(item => (
+                <label key={item.productId} className="flex items-center gap-3 cursor-pointer">
+                  <div
+                    onClick={() => setSubscribeItems(prev => {
+                      const next = new Set(prev);
+                      if (next.has(item.productId)) next.delete(item.productId);
+                      else next.add(item.productId);
+                      return next;
+                    })}
+                    className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${subscribeItems.has(item.productId) ? 'bg-amber-500' : 'bg-stone-200'}`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${subscribeItems.has(item.productId) ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </div>
+                  <span className="text-sm font-semibold text-stone-700">{item.productName} ×{item.quantity}</span>
+                </label>
+              ))}
+            </div>
+            {subscribeItems.size > 0 && (
+              <div className="mt-4">
+                <p className="label mb-2">Delivery Frequency</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['weekly','biweekly','monthly'] as SubscriptionFrequency[]).map(f => (
+                    <button key={f} onClick={() => setSubFrequency(f)}
+                      className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                        subFrequency === f ? 'border-amber-500 bg-amber-500 text-white' : 'border-stone-200 bg-white text-stone-600'
+                      }`}>
+                      {f === 'weekly' ? 'Weekly' : f === 'biweekly' ? 'Every 2 Weeks' : 'Monthly'}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>

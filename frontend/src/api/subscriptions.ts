@@ -7,6 +7,7 @@ export interface CreateSubscriptionPayload {
   address: string;
   pincode: string;
   productId: string;
+  productName: string;
   variantId?: string;
   quantity: number;
   frequency: SubscriptionFrequency;
@@ -28,5 +29,5 @@ export const getSubscriptionsByPhone = (phoneNumber: string) =>
 
 export const cancelSubscription = (subscriptionId: string) =>
   client
-    .patch<{ success: boolean }>(`/api/subscriptions/${subscriptionId}/cancel`)
+    .patch<{ success: boolean }>(`/api/subscriptions/${subscriptionId}/status`, { subscriptionStatus: 'cancelled' })
     .then(r => r.data);

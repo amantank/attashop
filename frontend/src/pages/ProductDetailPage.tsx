@@ -30,6 +30,10 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [subscribeMode, setSubscribeMode] = useState(false);
   const [frequency, setFrequency] = useState<SubscriptionFrequency>('weekly');
+  const [subName, setSubName] = useState(customerInfo.name || '');
+  const [subPhone, setSubPhone] = useState(customerInfo.phone || '');
+  const [subAddress, setSubAddress] = useState(customerInfo.address || '');
+  const [subPincode, setSubPincode] = useState(customerInfo.pincode || '');
   const [subLoading, setSubLoading] = useState(false);
 
   if (isLoading) return <Loader text={t('loading')} />;
@@ -67,18 +71,19 @@ export default function ProductDetailPage() {
   };
 
   const handleSubscribe = async () => {
-    if (!customerInfo.phone || !customerInfo.address || !customerInfo.pincode) {
-      toast.error(lang === 'hi' ? 'पहले ऑर्डर दें – नाम, फोन, पता जरूरी है।' : 'Please place an order first to save your details.');
-      return;
-    }
+    if (!subName.trim()) { toast.error('Please enter your name'); return; }
+    if (subPhone.length < 10) { toast.error('Enter a valid 10-digit phone number'); return; }
+    if (!subAddress.trim()) { toast.error('Please enter your address'); return; }
+    if (subPincode.length !== 6) { toast.error('Enter a valid 6-digit pincode'); return; }
     setSubLoading(true);
     try {
       await createSubscription({
-        customerName: customerInfo.name,
-        phoneNumber: customerInfo.phone,
-        address: customerInfo.address,
-        pincode: customerInfo.pincode,
+        customerName: subName,
+        phoneNumber: subPhone,
+        address: subAddress,
+        pincode: subPincode,
         productId: product.productId,
+        productName: product.name,
         variantId: selectedVariant?.variantId,
         quantity,
         frequency,
@@ -189,7 +194,7 @@ export default function ProductDetailPage() {
             </label>
 
             {subscribeMode && (
-              <div className="mt-3 animate-fade-in-up">
+              <div className="mt-3 animate-fade-in-up space-y-3">
                 <p className="label">{t('subscriptionPlan')}</p>
                 <div className="grid grid-cols-3 gap-2">
                   {freqOptions.map(opt => (
@@ -205,6 +210,15 @@ export default function ProductDetailPage() {
                       {opt.label}
                     </button>
                   ))}
+                </div>
+                <div className="border-t border-amber-200 pt-3 space-y-2">
+                  <p className="label text-xs text-stone-500">Delivery Details</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input className="input text-sm" placeholder="Full Name" value={subName} onChange={e => setSubName(e.target.value)} />
+                    <input className="input text-sm" placeholder="Phone (10 digits)" maxLength={10} value={subPhone} onChange={e => setSubPhone(e.target.value.replace(/\D/g, ''))} />
+                  </div>
+                  <input className="input text-sm" placeholder="Full Address" value={subAddress} onChange={e => setSubAddress(e.target.value)} />
+                  <input className="input text-sm" placeholder="Pincode (6 digits)" maxLength={6} value={subPincode} onChange={e => setSubPincode(e.target.value.replace(/\D/g, ''))} />
                 </div>
               </div>
             )}
