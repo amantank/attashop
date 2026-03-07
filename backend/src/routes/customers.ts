@@ -10,7 +10,39 @@ router.get('/:phone/orders', async (req: Request, res: Response) => {
     const orders = await Order.find({ phoneNumber: req.params.phone })
       .sort({ createdAt: -1 })
       .limit(20);
-    res.json({ success: true, orders });
+
+    // Mask sensitive information before sending it to the client
+    const maskedOrders = orders.map(order => {
+      const o = order.toObject();
+      
+      // Mask phone number (Keep first 2 and last 2)
+      if (o.phoneNumber && o.phoneNumber.length >= 10) {
+        o.phoneNumber = `${o.phoneNumber.substring(0, 2)}******${o.phoneNumber.substring(o.phoneNumber.length - 2)}`;
+      }
+
+      // Mask address more intelligently
+      if (o.address) {
+        if (o.address.length > 15) {
+          // Keep first 5, mask middle, keep last 5
+          o.address = `${o.address.substring(0, 5)}...${o.address.substring(o.address.length - 5)}`;
+        } else if (o.address.length > 5) {
+          // Keep first 2, mask rest
+          o.address = `${o.address.substring(0, 2)}${'*'.repeat(o.address.length - 2)}`;
+        } else {
+          // Just mask all but first char
+          o.address = `${o.address.substring(0, 1)}***`;
+        }
+      }
+
+      // Hide landmark completely
+      if (o.landmark) {
+        o.landmark = '***';
+      }
+
+      return o;
+    });
+
+    res.json({ success: true, orders: maskedOrders });
   } catch (err) {
     res.status(500).json({ success: false, message: (err as Error).message });
   }

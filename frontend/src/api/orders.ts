@@ -21,9 +21,7 @@ export const getOrder = (orderId: string) =>
 
 export const getOrdersByPhone = (phoneNumber: string) =>
   client
-    .get<{ success: boolean; orders: Order[] }>('/api/customers/orders', {
-      params: { phoneNumber },
-    })
+    .get<{ success: boolean; orders: Order[] }>(`/api/customers/${phoneNumber}/orders`)
     .then(r => r.data);
 
 /** Build cart items from a previous order for repeat-order feature */
