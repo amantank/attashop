@@ -13,9 +13,10 @@ router.post('/', async (req: Request, res: Response) => {
       frequency, paymentMethod,
     } = req.body;
 
-    // nextDeliveryDate = tomorrow
+    // Calculate first delivery date based on frequency
     const next = new Date();
-    next.setDate(next.getDate() + 1);
+    const freqDays = frequency === 'weekly' ? 7 : frequency === 'biweekly' ? 14 : 30;
+    next.setDate(next.getDate() + freqDays);
 
     const sub = new Subscription({
       subscriptionId: `SUB-${uuidv4().slice(0, 8).toUpperCase()}`,

@@ -104,7 +104,7 @@ export default function OrderHistoryPage() {
               <div>
                 <p className="font-bold text-stone-900 font-mono text-sm">{order.orderId}</p>
                 <p className="text-xs text-stone-500 mt-0.5">
-                  {t('orderDate')}: {new Date(order.createdAt).toLocaleDateString('en-IN')}
+                  {t('orderDate')}: {new Date(order.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                 </p>
               </div>
               <div className="flex items-center gap-3">

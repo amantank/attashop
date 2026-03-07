@@ -85,7 +85,7 @@ export default function SubscriptionsPage() {
                 </div>
                 <p className="text-xs text-stone-500 mt-2 flex items-center gap-1">
                   <Calendar size={12} />
-                  {t('nextDelivery')}: {sub.nextDeliveryDate ? new Date(sub.nextDeliveryDate).toLocaleDateString('en-IN') : 'TBD'}
+                  {t('nextDelivery')}: {sub.nextDeliveryDate ? new Date(sub.nextDeliveryDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'TBD'}
                 </p>
                 <p className="text-xs text-stone-400 mt-0.5">
                   💳 {sub.paymentMethod.toUpperCase()} · 📞 {sub.phoneNumber}
