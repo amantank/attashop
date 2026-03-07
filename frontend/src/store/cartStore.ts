@@ -18,6 +18,9 @@ interface CartState {
   paymentMethod: PaymentMethod;
   deliveryCharge: number;
 
+  subscribeItems: string[];
+  subFrequency: 'weekly' | 'biweekly' | 'monthly';
+
   // Actions
   addItem: (item: CartItem) => void;
   removeItem: (productId: string, variantId?: string) => void;
@@ -29,6 +32,8 @@ interface CartState {
   setPaymentMethod: (method: PaymentMethod) => void;
   setDeliveryCharge: (charge: number) => void;
   repeatOrder: (items: CartItem[]) => void;
+  toggleSubscribeItem: (productId: string) => void;
+  setSubFrequency: (freq: 'weekly' | 'biweekly' | 'monthly') => void;
 
   // Computed helpers
   itemCount: () => number;
@@ -48,6 +53,8 @@ export const useCartStore = create<CartState>()(
       deliverySlot: '',
       paymentMethod: 'cod',
       deliveryCharge: 0,
+      subscribeItems: [],
+      subFrequency: 'weekly',
 
       addItem: (item) =>
         set(state => {
@@ -77,7 +84,7 @@ export const useCartStore = create<CartState>()(
                 ),
         })),
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], subscribeItems: [], subFrequency: 'weekly' }),
 
       setCustomerInfo: (info) =>
         set(state => ({ customerInfo: { ...state.customerInfo, ...info } })),
@@ -89,6 +96,15 @@ export const useCartStore = create<CartState>()(
 
       repeatOrder: (items) => set({ items }),
 
+      toggleSubscribeItem: (productId) =>
+        set(state => {
+          const next = new Set(state.subscribeItems);
+          if (next.has(productId)) next.delete(productId);
+          else next.add(productId);
+          return { subscribeItems: Array.from(next) };
+        }),
+      setSubFrequency: (freq) => set({ subFrequency: freq }),
+
       itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
       subtotal: () => get().items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),
       total: () => get().subtotal() + get().deliveryCharge,
@@ -99,6 +115,8 @@ export const useCartStore = create<CartState>()(
         items: state.items,
         customerInfo: state.customerInfo,
         deliveryCharge: state.deliveryCharge,
+        subscribeItems: state.subscribeItems,
+        subFrequency: state.subFrequency,
       }),
     }
   )

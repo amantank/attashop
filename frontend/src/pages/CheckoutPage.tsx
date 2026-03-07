@@ -24,14 +24,13 @@ export default function CheckoutPage() {
     deliveryDate, setDeliveryDate,
     deliverySlot, setDeliverySlot,
     paymentMethod, setPaymentMethod,
+    subscribeItems, toggleSubscribeItem, subFrequency, setSubFrequency,
     clearCart,
   } = useCartStore();
 
   const [slots, setSlots] = useState<DeliverySlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [subscribeItems, setSubscribeItems] = useState<Set<string>>(new Set());
-  const [subFrequency, setSubFrequency] = useState<SubscriptionFrequency>('weekly');
   const sub = subtotal();
 
   // Redirect if cart empty
@@ -93,7 +92,7 @@ export default function CheckoutPage() {
       });
       clearCart();
       // Create subscriptions for toggled items
-      const subItems = items.filter(i => subscribeItems.has(i.productId));
+      const subItems = items.filter(i => subscribeItems.includes(i.productId));
       for (const item of subItems) {
         try {
           await createSubscription({
@@ -214,21 +213,16 @@ export default function CheckoutPage() {
               {items.map(item => (
                 <label key={item.productId} className="flex items-center gap-3 cursor-pointer">
                   <div
-                    onClick={() => setSubscribeItems(prev => {
-                      const next = new Set(prev);
-                      if (next.has(item.productId)) next.delete(item.productId);
-                      else next.add(item.productId);
-                      return next;
-                    })}
-                    className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${subscribeItems.has(item.productId) ? 'bg-amber-500' : 'bg-stone-200'}`}
+                    onClick={() => toggleSubscribeItem(item.productId)}
+                    className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${subscribeItems.includes(item.productId) ? 'bg-amber-500' : 'bg-stone-200'}`}
                   >
-                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${subscribeItems.has(item.productId) ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${subscribeItems.includes(item.productId) ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </div>
                   <span className="text-sm font-semibold text-stone-700">{item.productName} ×{item.quantity}</span>
                 </label>
               ))}
             </div>
-            {subscribeItems.size > 0 && (
+            {subscribeItems.length > 0 && (
               <div className="mt-4">
                 <p className="label mb-2">Delivery Frequency</p>
                 <div className="grid grid-cols-3 gap-2">
@@ -273,7 +267,14 @@ export default function CheckoutPage() {
           <div className="space-y-2 mb-4">
             {items.map(item => (
               <div key={`${item.productId}-${item.variantId}`} className="flex justify-between text-sm text-stone-600">
-                <span className="truncate pr-2">{item.productName} {item.size && `(${item.size})`} ×{item.quantity}</span>
+                <span className="truncate pr-2">
+                  {item.productName} {item.size && `(${item.size})`} ×{item.quantity}
+                  {subscribeItems.includes(item.productId) && (
+                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                      🔁 {subFrequency}
+                    </span>
+                  )}
+                </span>
                 <span className="font-bold text-stone-800 shrink-0">₹{(item.unitPrice * item.quantity).toFixed(0)}</span>
               </div>
             ))}
@@ -305,9 +306,14 @@ export default function CheckoutPage() {
           <button
             onClick={handlePlaceOrder}
             disabled={placing}
-            className="btn-primary w-full mt-5 py-4 text-base"
+            className="btn-primary w-full mt-5 py-3 text-base flex flex-col items-center justify-center gap-0.5"
           >
-            {placing ? t('placingOrder') : t('placeOrder')}
+            <span>{placing ? t('placingOrder') : t('placeOrder')}</span>
+            {subscribeItems.length > 0 && !placing && (
+              <span className="text-[11px] opacity-90 font-medium tracking-wide">
+                + Subscribe {subscribeItems.length} item{subscribeItems.length > 1 ? 's' : ''}
+              </span>
+            )}
           </button>
         </div>
       </div>
