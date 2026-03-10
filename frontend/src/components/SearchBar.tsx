@@ -71,7 +71,7 @@ export default function SearchBar() {
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-50 transition text-left border-b border-stone-50 last:border-0"
             >
               <img
-                src={p.imageUrl || 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=60&h=60&fit=crop'}
+                src={p.images?.[0] || 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=60&h=60&fit=crop'}
                 alt={p.name}
                 className="w-11 h-11 rounded-xl object-cover"
               />
@@ -81,7 +81,9 @@ export default function SearchBar() {
                 </p>
                 <p className="text-xs text-stone-400">{p.categoryId}</p>
               </div>
-              <span className="text-sm font-bold text-amber-600 shrink-0">₹{p.finalPrice}</span>
+              <span className="text-sm font-bold text-amber-600 shrink-0">
+                ₹{p.variants?.length > 0 && p.variants[0].price > 0 ? p.variants[0].price : p.pricing.basePrice}
+              </span>
             </button>
           ))}
         </div>

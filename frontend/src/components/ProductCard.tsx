@@ -16,13 +16,11 @@ export default function ProductCard({ product }: Props) {
   const name = lang === 'hi' && product.nameHi ? product.nameHi : product.name;
   const hasVariants = product.variants.length > 0;
   const defaultVariant = hasVariants ? product.variants[0] : null;
-  const displayPrice = defaultVariant ? defaultVariant.finalPrice : product.finalPrice;
-  const basePrice = defaultVariant ? defaultVariant.price : product.price;
-  const discount = defaultVariant ? defaultVariant.discount : product.discount;
-  const totalStock = defaultVariant
-    ? product.variants.reduce((s, v) => s + v.stock, 0)
-    : product.stock;
-  const isOutOfStock = totalStock === 0;
+  const displayPrice = (defaultVariant && defaultVariant.price > 0) ? defaultVariant.price : product.pricing.basePrice;
+  const basePrice    = product.pricing.mrp > displayPrice ? product.pricing.mrp : displayPrice;
+  const discount     = basePrice > displayPrice ? Math.round(((basePrice - displayPrice) / basePrice) * 100) : 0;
+  const totalStock   = product.inventory.quantity;
+  const isOutOfStock = totalStock === 0 || product.stockStatus === 'out_of_stock';
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -31,9 +29,9 @@ export default function ProductCard({ product }: Props) {
       productId: product.productId,
       productName: product.name,
       productNameHi: product.nameHi,
-      imageUrl: product.imageUrl || PLACEHOLDER,
-      variantId: defaultVariant?.variantId,
-      size: defaultVariant?.size,
+      imageUrl: product.images?.[0] || PLACEHOLDER,
+      variantId: defaultVariant?._id,
+      size: defaultVariant ? (defaultVariant.weight > 0 ? `${defaultVariant.weight}${defaultVariant.unit}` : 'Loose') : undefined,
       quantity: 1,
       unitPrice: displayPrice,
       categoryId: product.categoryId,
@@ -47,7 +45,7 @@ export default function ProductCard({ product }: Props) {
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-amber-50">
           <img
-            src={product.imageUrl || PLACEHOLDER}
+            src={product.images?.[0] || PLACEHOLDER}
             alt={name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
@@ -79,9 +77,9 @@ export default function ProductCard({ product }: Props) {
           {/* Variant size pills */}
           {hasVariants && (
             <div className="flex flex-wrap gap-1 mb-2">
-              {product.variants.slice(0, 3).map(v => (
-                <span key={v.variantId} className="px-2 py-0.5 text-[10px] font-semibold border border-stone-200 rounded-full text-stone-500">
-                  {v.size}
+              {product.variants.slice(0, 3).map((v, i) => (
+                <span key={v._id || i} className="px-2 py-0.5 text-[10px] font-semibold border border-stone-200 rounded-full text-stone-500">
+                  {v.weight > 0 ? `${v.weight}${v.unit}` : 'Loose'}
                 </span>
               ))}
             </div>

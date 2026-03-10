@@ -37,14 +37,18 @@ export default function ProductDetailPage() {
   const hasVariants = product.variants.length > 0;
 
   const selectedVariant = hasVariants
-    ? product.variants.find(v => v.variantId === selectedVariantId) || product.variants[0]
+    ? product.variants.find(v => v._id === selectedVariantId) || product.variants[0]
     : null;
 
-  const displayPrice = selectedVariant ? selectedVariant.finalPrice : product.finalPrice;
-  const basePrice   = selectedVariant ? selectedVariant.price : product.price;
-  const discount    = selectedVariant ? selectedVariant.discount : product.discount;
-  const stockCount  = selectedVariant ? selectedVariant.stock : product.stock;
-  const isOutOfStock = stockCount === 0;
+  const displayPrice = (selectedVariant && selectedVariant.price > 0) ? selectedVariant.price : product.pricing.basePrice;
+  const basePrice    = product.pricing.mrp > displayPrice ? product.pricing.mrp : displayPrice;
+  const discount     = basePrice > displayPrice ? Math.round(((basePrice - displayPrice) / basePrice) * 100) : 0;
+  const stockCount   = product.inventory.quantity;
+  const isOutOfStock = product.stockStatus === 'out_of_stock' || stockCount === 0;
+
+  const totalAmountString = selectedVariant && selectedVariant.weight > 0 
+    ? `${selectedVariant.weight * quantity} ${selectedVariant.unit}` 
+    : `${quantity} ${product.pricing.unit}`;
 
   const handleAddToCart = () => {
     if (isOutOfStock) return;
@@ -52,9 +56,9 @@ export default function ProductDetailPage() {
       productId: product.productId,
       productName: product.name,
       productNameHi: product.nameHi,
-      imageUrl: product.imageUrl || PLACEHOLDER,
-      variantId: selectedVariant?.variantId,
-      size: selectedVariant?.size,
+      imageUrl: product.images?.[0] || PLACEHOLDER,
+      variantId: selectedVariant?._id,
+      size: selectedVariant && selectedVariant.weight > 0 ? `${selectedVariant.weight}${selectedVariant.unit}` : `${quantity} ${product.pricing.unit}`,
       quantity,
       unitPrice: displayPrice,
       categoryId: product.categoryId,
@@ -71,9 +75,9 @@ export default function ProductDetailPage() {
       productId: product.productId,
       productName: product.name,
       productNameHi: product.nameHi,
-      imageUrl: product.imageUrl || PLACEHOLDER,
-      variantId: selectedVariant?.variantId,
-      size: selectedVariant?.size,
+      imageUrl: product.images?.[0] || PLACEHOLDER,
+      variantId: selectedVariant?._id,
+      size: selectedVariant && selectedVariant.weight > 0 ? `${selectedVariant.weight}${selectedVariant.unit}` : `${quantity} ${product.pricing.unit}`,
       quantity,
       unitPrice: displayPrice,
       categoryId: product.categoryId,
@@ -105,7 +109,7 @@ export default function ProductDetailPage() {
         {/* Image */}
         <div className="aspect-square rounded-3xl overflow-hidden bg-amber-50 shadow-lg">
           <img
-            src={product.imageUrl || PLACEHOLDER}
+            src={product.images?.[0] || PLACEHOLDER}
             alt={name}
             className="w-full h-full object-cover"
           />
@@ -124,6 +128,9 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-extrabold text-stone-900">₹{displayPrice}</span>
+            <span className="text-sm font-semibold text-stone-500">
+              / {selectedVariant && selectedVariant.weight > 0 ? `${selectedVariant.weight}${selectedVariant.unit}` : product.pricing.unit}
+            </span>
             {discount > 0 && (
               <>
                 <span className="text-lg text-stone-400 line-through">₹{basePrice}</span>
@@ -131,6 +138,11 @@ export default function ProductDetailPage() {
               </>
             )}
           </div>
+          {selectedVariant && selectedVariant.weight > 0 && (
+            <p className="text-xs text-stone-500 font-medium">
+              Base rate: ₹{product.pricing.basePrice} / {product.pricing.unit}
+            </p>
+          )}
 
           {/* Stock */}
           <div>
@@ -145,23 +157,26 @@ export default function ProductDetailPage() {
             <div>
               <p className="label">{t('selectVariant')}</p>
               <div className="flex flex-wrap gap-2">
-                {product.variants.map(v => (
+                {product.variants.map((v, i) => {
+                  const truePrice = v.price > 0 ? v.price : product.pricing.basePrice;
+                  return (
                   <button
-                    key={v.variantId}
-                    onClick={() => setSelectedVariantId(v.variantId)}
-                    disabled={v.stock === 0}
+                    key={v._id || i}
+                    onClick={() => setSelectedVariantId(v._id)}
+                    disabled={isOutOfStock}
                     className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                      (selectedVariantId || product.variants[0].variantId) === v.variantId
+                      (selectedVariantId || product.variants[0]._id) === v._id
                         ? 'border-amber-500 bg-amber-500 text-white shadow-md'
-                        : v.stock === 0
+                        : isOutOfStock
                           ? 'border-stone-200 bg-stone-50 text-stone-300 cursor-not-allowed'
                           : 'border-stone-200 bg-white text-stone-700 hover:border-amber-400'
                     }`}
                   >
-                    <span>{v.size}</span>
-                    <span className="block text-xs font-semibold opacity-80">₹{v.finalPrice}</span>
-                  </button>
-                ))}
+                    <span>{v.weight > 0 ? `${v.weight}${v.unit}` : 'Loose'}</span>
+                    <span className="block text-xs font-semibold opacity-80">₹{truePrice}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -169,10 +184,25 @@ export default function ProductDetailPage() {
           {/* Quantity */}
           <div>
             <p className="label">{t('quantity')}</p>
-            <div className="flex items-center gap-3">
-              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="stepper-btn"><Minus size={16} /></button>
-              <span className="w-10 text-center font-extrabold text-lg">{quantity}</span>
-              <button onClick={() => setQuantity(q => q + 1)} className="stepper-btn"><Plus size={16} /></button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setQuantity(q => Math.max(0.5, q - 0.5))} className="stepper-btn"><Minus size={16} /></button>
+                <input 
+                  type="number" 
+                  step="0.5"
+                  min="0.5"
+                  className="w-14 text-center font-extrabold text-lg bg-transparent border-b-2 border-stone-200 focus:border-amber-500 outline-none transition"
+                  value={quantity}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val) && val > 0) setQuantity(val);
+                  }}
+                />
+                <button onClick={() => setQuantity(q => q + 0.5)} className="stepper-btn"><Plus size={16} /></button>
+              </div>
+              <div className="text-sm font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                Total: {totalAmountString}
+              </div>
             </div>
           </div>
 

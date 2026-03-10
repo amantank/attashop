@@ -1,11 +1,9 @@
 // ─── Product ────────────────────────────────────────────────────────────────
 export interface ProductVariant {
-  variantId: string;
-  size: string;
+  _id?: string;
+  weight: number;
+  unit: string;
   price: number;
-  discount: number;
-  finalPrice: number;
-  stock: number;
 }
 
 export interface Product {
@@ -13,15 +11,28 @@ export interface Product {
   productId: string;
   name: string;
   nameHi: string;
+  slug: string;
   description: string;
   descriptionHi: string;
-  price: number;
-  discount: number;
-  finalPrice: number;
-  imageUrl: string;
-  stock: number;
+  
+  pricing: {
+    basePrice: number;
+    unit: string;
+    mrp: number;
+  };
+  
+  inventory: {
+    quantity: number;
+    unit: string;
+    lowStockThreshold: number;
+  };
+  
+  images: string[];
+  stockStatus: 'in_stock' | 'low_stock' | 'out_of_stock';
+  minOrder: number;
+  minHomeDeliveryQuantity: number;
+  
   categoryId: string;
-  unitType: 'kg' | 'g' | 'litre' | 'packet' | 'piece';
   variants: ProductVariant[];
   isFeatured: boolean;
   isActive: boolean;

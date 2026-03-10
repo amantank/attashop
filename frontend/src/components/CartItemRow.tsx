@@ -38,19 +38,21 @@ export default function CartItemRow({ item }: Props) {
           <span className="text-[11px]">🔁</span> {isSubscribed ? 'Subscribed' : 'Subscribe'}
         </button>
 
-        <p className="text-amber-600 font-extrabold text-sm mt-2">₹{(item.unitPrice * item.quantity).toFixed(0)}</p>
+        <p className="text-amber-600 font-extrabold text-sm mt-2">
+          ₹{(item.unitPrice > 0 ? item.unitPrice * item.quantity : item.quantity).toFixed(0)}
+        </p>
       </div>
       {/* Qty stepper */}
       <div className="flex items-center gap-1.5">
         <button
-          onClick={() => updateQuantity(item.productId, item.variantId, item.quantity - 1)}
+          onClick={() => updateQuantity(item.productId, item.variantId, Math.max(0.5, item.quantity - 0.5))}
           className="stepper-btn"
         >
           <Minus size={14} />
         </button>
-        <span className="w-7 text-center font-bold text-stone-800 text-sm">{item.quantity}</span>
+        <span className="w-9 text-center font-bold text-stone-800 text-sm whitespace-nowrap">{item.quantity}</span>
         <button
-          onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)}
+          onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 0.5)}
           className="stepper-btn"
         >
           <Plus size={14} />
