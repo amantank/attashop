@@ -4,12 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Minus, Plus, ShoppingCart, Bell, Check } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { getProduct } from '../api/products';
-import { createSubscription } from '../api/subscriptions';
-import { placeOrder } from '../api/orders';
 import { useCartStore } from '../store/cartStore';
 import { Loader, ErrorMessage } from '../components/Loader';
 import toast from 'react-hot-toast';
-import type { SubscriptionFrequency, PaymentMethod } from '../types';
 
 const PLACEHOLDER = 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=600&h=500&fit=crop';
 
@@ -17,8 +14,7 @@ export default function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
-  const addItem = useCartStore(s => s.addItem);
-  const customerInfo = useCartStore(s => s.customerInfo);
+  const { addItem, addSubscribeItem, setSubFrequency, setSubCustomDays } = useCartStore();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['product', productId],
@@ -30,13 +26,8 @@ export default function ProductDetailPage() {
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>();
   const [quantity, setQuantity] = useState(1);
   const [subscribeMode, setSubscribeMode] = useState(false);
-  const [frequency, setFrequency] = useState<SubscriptionFrequency>('weekly');
+  const [frequency, setFrequency] = useState<'weekly' | 'biweekly' | 'monthly' | 'custom'>('weekly');
   const [customDays, setCustomDays] = useState<number>(30); // Default to 30
-  const [subName, setSubName] = useState(customerInfo.name || '');
-  const [subPhone, setSubPhone] = useState(customerInfo.phone || '');
-  const [subAddress, setSubAddress] = useState(customerInfo.address || '');
-  const [subPincode, setSubPincode] = useState(customerInfo.pincode || '');
-  const [subLoading, setSubLoading] = useState(false);
 
   if (isLoading) return <Loader text={t('loading')} />;
   if (isError || !product) return <ErrorMessage message={t('error')} onRetry={() => refetch()} />;
@@ -72,56 +63,36 @@ export default function ProductDetailPage() {
     navigate('/cart');
   };
 
-  const handleSubscribe = async () => {
-    if (!subName.trim()) { toast.error('Please enter your name'); return; }
-    if (subPhone.length < 10) { toast.error('Enter a valid 10-digit phone number'); return; }
-    if (!subAddress.trim()) { toast.error('Please enter your address'); return; }
-    if (subPincode.length !== 6) { toast.error('Enter a valid 6-digit pincode'); return; }
-    setSubLoading(true);
-    try {
-      // Create Subscription
-      await createSubscription({
-        customerName: subName,
-        phoneNumber: subPhone,
-        address: subAddress,
-        pincode: subPincode,
-        productId: product.productId,
-        productName: product.name,
-        variantId: selectedVariant?.variantId,
-        quantity,
-        frequency,
-        customDays: frequency === 'custom' ? customDays : undefined,
-        paymentMethod: 'cod', // Hardcoded COD for native product page subscriptions for now
-      });
+  const handleSubscribe = () => {
+    if (isOutOfStock) return;
+    
+    // 1. Add item to cart
+    addItem({
+      productId: product.productId,
+      productName: product.name,
+      productNameHi: product.nameHi,
+      imageUrl: product.imageUrl || PLACEHOLDER,
+      variantId: selectedVariant?.variantId,
+      size: selectedVariant?.size,
+      quantity,
+      unitPrice: displayPrice,
+      categoryId: product.categoryId,
+    });
 
-      // Place initial Order for today
-      await placeOrder({
-        customerName: subName,
-        phoneNumber: subPhone,
-        address: subAddress,
-        pincode: subPincode,
-        products: [
-          {
-            productId: product.productId,
-            variantId: selectedVariant?.variantId,
-            quantity,
-          }
-        ],
-        paymentMethod: 'cod',
-        deliveryDate: new Date().toISOString().split('T')[0],
-        deliverySlot: 'Anytime',
-      });
+    // 2. Add it to the subscribe list within cart payload
+    addSubscribeItem(product.productId);
 
-      toast.success(lang === 'hi' ? 'सब्सक्रिप्शन बना दिया गया!' : 'Subscription created!');
-      navigate('/subscriptions');
-    } catch {
-      toast.error(t('error'));
-    } finally {
-      setSubLoading(false);
+    // 3. Set global frequency
+    setSubFrequency(frequency);
+    if (frequency === 'custom') {
+      setSubCustomDays(customDays);
     }
+
+    // 4. Send to Checkout explicitly
+    navigate('/checkout');
   };
 
-  const freqOptions: { label: string; value: SubscriptionFrequency }[] = [
+  const freqOptions: { label: string; value: 'weekly' | 'biweekly' | 'monthly' | 'custom' }[] = [
     { label: t('weekly'), value: 'weekly' },
     { label: t('biweekly'), value: 'biweekly' },
     { label: t('monthly'), value: 'monthly' },
@@ -248,15 +219,6 @@ export default function ProductDetailPage() {
                     <span className="text-sm text-stone-600 font-medium">days</span>
                   </div>
                 )}
-                <div className="border-t border-amber-200 pt-3 space-y-2">
-                  <p className="label text-xs text-stone-500">Delivery Details</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input className="input text-sm" placeholder="Full Name" value={subName} onChange={e => setSubName(e.target.value)} />
-                    <input className="input text-sm" placeholder="Phone (10 digits)" maxLength={10} value={subPhone} onChange={e => setSubPhone(e.target.value.replace(/\D/g, ''))} />
-                  </div>
-                  <input className="input text-sm" placeholder="Full Address" value={subAddress} onChange={e => setSubAddress(e.target.value)} />
-                  <input className="input text-sm" placeholder="Pincode (6 digits)" maxLength={6} value={subPincode} onChange={e => setSubPincode(e.target.value.replace(/\D/g, ''))} />
-                </div>
               </div>
             )}
           </div>
@@ -266,11 +228,11 @@ export default function ProductDetailPage() {
             {subscribeMode ? (
               <button
                 onClick={handleSubscribe}
-                disabled={subLoading || isOutOfStock}
-                className="btn-primary py-4 text-base"
+                disabled={isOutOfStock}
+                className={`btn-primary py-4 text-base ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Bell size={18} />
-                {subLoading ? t('loading') : t('addSubscription')}
+                {t('addSubscription')}
               </button>
             ) : (
               <button

@@ -34,6 +34,7 @@ interface CartState {
   setDeliveryCharge: (charge: number) => void;
   repeatOrder: (items: CartItem[]) => void;
   toggleSubscribeItem: (productId: string) => void;
+  addSubscribeItem: (productId: string) => void;
   setSubFrequency: (freq: 'weekly' | 'biweekly' | 'monthly' | 'custom') => void;
   setSubCustomDays: (days: number) => void;
 
@@ -106,6 +107,14 @@ export const useCartStore = create<CartState>()(
           else next.add(productId);
           return { subscribeItems: Array.from(next) };
         }),
+        
+      addSubscribeItem: (productId) =>
+        set(state => {
+          const next = new Set(state.subscribeItems);
+          next.add(productId);
+          return { subscribeItems: Array.from(next) };
+        }),
+
       setSubFrequency: (freq) =>
         set({ subFrequency: freq }),
 
