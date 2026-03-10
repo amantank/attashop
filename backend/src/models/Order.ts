@@ -5,6 +5,7 @@ export interface IOrderProduct {
   productName: string;
   variantId?: string;
   size?: string;
+  preferences?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
@@ -43,6 +44,7 @@ const OrderProductSchema = new Schema<IOrderProduct>(
     productName: { type: String, required: true },
     variantId: { type: String },
     size: { type: String },
+    preferences: { type: String },
     quantity: { type: Number, required: true },
     unitPrice: { type: Number, required: true },
     totalPrice: { type: Number, required: true },

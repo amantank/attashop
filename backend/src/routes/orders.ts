@@ -59,13 +59,17 @@ router.post('/', async (req: Request, res: Response) => {
       const product = await Product.findOne({ productId: item.productId });
       if (!product || !product.isActive) continue;
 
-      let unitPrice = product.finalPrice;
+      if (product.minHomeDeliveryQuantity && item.quantity < product.minHomeDeliveryQuantity) {
+        return res.status(400).json({ success: false, message: `Quantity for [${product.name}] must be at least ${product.minHomeDeliveryQuantity}kg for home delivery.` });
+      }
+
+      let unitPrice = product.pricing.basePrice;
       let variantId: string | undefined;
       let size: string | undefined;
 
       if (item.variantId) {
-        const variant = product.variants.find(v => v.variantId === item.variantId);
-        if (variant) { unitPrice = variant.finalPrice; variantId = variant.variantId; size = variant.size; }
+        const variant = product.variants.find(v => (v as any)._id?.toString() === item.variantId);
+        if (variant) { unitPrice = variant.price; variantId = (variant as any)._id?.toString(); size = `${variant.weight}${variant.unit}`; }
       }
 
       const itemTotal = unitPrice * item.quantity;
@@ -75,18 +79,17 @@ router.post('/', async (req: Request, res: Response) => {
         productId: product.productId,
         productName: product.name,
         variantId, size,
+        preferences: item.preferences,
         quantity: item.quantity,
         unitPrice,
         totalPrice: itemTotal,
       });
 
-      // Deduct stock
-      if (variantId) {
-        const vIdx = product.variants.findIndex(v => v.variantId === variantId);
-        if (vIdx >= 0) product.variants[vIdx].stock = Math.max(0, product.variants[vIdx].stock - item.quantity);
-      } else {
-        product.stock = Math.max(0, product.stock - item.quantity);
-      }
+      // Deduct stock (global inventory)
+      product.inventory.quantity = Math.max(0, product.inventory.quantity - item.quantity);
+      if (product.inventory.quantity === 0) product.stockStatus = 'out_of_stock';
+      else if (product.inventory.quantity <= product.inventory.lowStockThreshold) product.stockStatus = 'low_stock';
+      
       await product.save();
     }
 

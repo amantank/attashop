@@ -65,11 +65,11 @@ router.post('/repeat-order', async (req: Request, res: Response) => {
         continue;
       }
 
-      let currentPrice = product.finalPrice;
-      let stock = product.stock;
+      let currentPrice = product.pricing.basePrice;
+      let stock = product.inventory.quantity;
       if (item.variantId) {
-        const v = product.variants.find(x => x.variantId === item.variantId);
-        if (v) { currentPrice = v.finalPrice; stock = v.stock; }
+        const v = product.variants.find(x => (x as any)._id?.toString() === item.variantId);
+        if (v) { currentPrice = v.price; stock = product.inventory.quantity; }
       }
 
       if (stock === 0) {
@@ -81,7 +81,7 @@ router.post('/repeat-order', async (req: Request, res: Response) => {
       cartItems.push({
         productId: product.productId,
         productName: product.name,
-        imageUrl: product.imageUrl,
+        imageUrl: product.images[0] || '',
         variantId: item.variantId,
         size: item.size,
         quantity: item.quantity,

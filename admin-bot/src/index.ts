@@ -69,10 +69,55 @@ bot.onText(/\/list_products|📦 List Products/, async msg => {
   } catch { bot.sendMessage(msg.chat.id, '❌ Failed to fetch products.'); }
 });
 
+// ── QUICK ADD PRODUCT (Shorthand) ────────────────────────
+bot.onText(/^\/add(?:$|\s+([\s\S]*))/, async (msg, match) => {
+  const input = match?.[1]?.trim();
+  if (!input) {
+    bot.sendMessage(msg.chat.id, `⚠️ *Quick Add Format:*\n\n/add\nName: <name>\nCategory: <category>\nPrice: <price>\nPack: <comma list>\nStock: <stock>\n<Specific>: <Value>\n...`, { parse_mode: 'Markdown' });
+    return;
+  }
+  
+  try {
+    const lines = input.split('\n');
+    const data: Record<string, string> = {};
+    for (const line of lines) {
+      if (!line.includes(':')) continue;
+      const [k, ...v] = line.split(':');
+      data[k.trim().toLowerCase()] = v.join(':').trim();
+    }
+    
+    // Map to payload
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payload: any = {
+      name: data.name,
+      categoryId: data.category,
+      price: Number(data.price || 0),
+      packSizes: data.pack ? data.pack.split(',').map(s=>Number(s.trim())) : [],
+      stock: Number(data.stock || 0),
+      specifications: {}
+    };
+
+    if (data.description) payload.description = data.description;
+    
+    // Assign specific properties to specifications
+    const reserved = ['name', 'category', 'price', 'pack', 'stock', 'description'];
+    for (const [key, val] of Object.entries(data)) {
+      if (!reserved.includes(key)) {
+        payload.specifications[key] = val;
+      }
+    }
+
+    const res = await axios.post(`${API}/api/products`, payload);
+    bot.sendMessage(msg.chat.id, `✅ *Product Quick Added!*\n\nID: \`${res.data.product.productId}\`\nName: ${res.data.product.name}`, { parse_mode: 'Markdown' });
+  } catch (e) {
+    bot.sendMessage(msg.chat.id, `❌ Failed to parse/add product: ${(e as Error).message}`);
+  }
+});
+
 // ── ADD PRODUCT WIZARD ────────────────────────────────────
 bot.onText(/\/add_product|➕ Add Product/, msg => {
-  wizards.set(msg.chat.id, { step: 'add_name', data: {} });
-  bot.sendMessage(msg.chat.id, '📝 *Add New Product*\n\nStep 1/7: Enter product *name*:', { parse_mode: 'Markdown' });
+  wizards.set(msg.chat.id, { step: 'add_image', data: {} });
+  bot.sendMessage(msg.chat.id, '📝 *Add New Product*\n\nStep 1/10: Send product *image* (or type /skip):', { parse_mode: 'Markdown' });
 });
 
 // ── UPDATE PRODUCT ─────────────────────────────────────
@@ -240,50 +285,138 @@ bot.on('message', async msg => {
   if (!state) return;
 
   // ── ADD PRODUCT WIZARD STEPS ─────────────────────────
-  if (state.step === 'add_name') {
-    state.data.name = text; state.step = 'add_nameh';
-    bot.sendMessage(chatId, 'Step 2/7: Enter Hindi name (or skip with /skip):');
-  } else if (state.step === 'add_nameh') {
-    state.data.nameHi = text === '/skip' ? '' : text; state.step = 'add_price';
-    bot.sendMessage(chatId, 'Step 3/7: Enter base *price* (₹):', { parse_mode: 'Markdown' });
-  } else if (state.step === 'add_price') {
-    state.data.price = parseFloat(text); state.step = 'add_discount';
-    bot.sendMessage(chatId, 'Step 4/7: Enter *discount* % (0 if none):', { parse_mode: 'Markdown' });
-  } else if (state.step === 'add_discount') {
-    state.data.discount = parseFloat(text); state.step = 'add_stock';
-    bot.sendMessage(chatId, 'Step 5/7: Enter initial *stock* quantity:', { parse_mode: 'Markdown' });
-  } else if (state.step === 'add_stock') {
-    state.data.stock = parseInt(text); state.step = 'add_category';
-    bot.sendMessage(chatId, 'Step 6/7: Enter *category name* (e.g. Atta, Rice, Dal):', { parse_mode: 'Markdown' });
-  } else if (state.step === 'add_category') {
-    state.data.categoryId = text; state.step = 'add_image';
-    bot.sendMessage(chatId, 'Step 7/7: Send product *image* (or type /skip):', { parse_mode: 'Markdown' });
-  } else if (state.step === 'add_image') {
+  if (state.step === 'add_image') {
     if (msg.photo) {
-      // Download largest photo
       const photo = msg.photo[msg.photo.length - 1];
-      const fileLink = await bot.getFileLink(photo.file_id);
-      state.data.imageUrl = fileLink;
+      try {
+        state.data.imageUrl = await bot.getFileLink(photo.file_id);
+      } catch (e) {
+        state.data.imageUrl = '';
+      }
     } else {
       state.data.imageUrl = '';
     }
-    // Create product via API
+    state.step = 'add_name';
+    bot.sendMessage(chatId, 'Step 2/9: Enter product *name* (e.g. Sharbati Wheat Aata):', { parse_mode: 'Markdown' });
+  } else if (state.step === 'add_name') {
+    state.data.name = text; state.step = 'add_category';
+    bot.sendMessage(chatId, 'Step 3/9: Select *category*:\n1️⃣ Aata\n2️⃣ Rice\n3️⃣ Dal\n4️⃣ Spices\n5️⃣ Oil\n(Type number or name)', { parse_mode: 'Markdown' });
+  } else if (state.step === 'add_category') {
+    const map: Record<string, string> = { '1': 'Aata', '2': 'Rice', '3': 'Dal', '4': 'Spices', '5': 'Oil' };
+    state.data.categoryId = map[text] || text;
+    state.step = 'add_desc';
+    bot.sendMessage(chatId, 'Step 4/9: Enter short *description*:', { parse_mode: 'Markdown' });
+  } else if (state.step === 'add_desc') {
+    state.data.description = text; state.step = 'add_price';
+    bot.sendMessage(chatId, 'Step 5/9: Enter base *price* (₹):', { parse_mode: 'Markdown' });
+  } else if (state.step === 'add_price') {
+    state.data.price = parseFloat(text); state.step = 'add_packs';
+    bot.sendMessage(chatId, 'Step 6/10: Enter *pack sizes* (e.g. 1,5,10) or type "Loose":', { parse_mode: 'Markdown' });
+  } else if (state.step === 'add_packs') {
+    state.data.packSizes = text; state.step = 'add_stock';
+    bot.sendMessage(chatId, 'Step 7/10: Enter initial *stock quantity* (in kg):', { parse_mode: 'Markdown' });
+  } else if (state.step === 'add_stock') {
+    state.data.stock = parseInt(text);
+    state.step = 'add_min_delivery';
+    bot.sendMessage(chatId, 'Step 8/10: Minimum weight (kg) for Home Delivery? (Enter 0 if no limit)');
+  } else if (state.step === 'add_min_delivery') {
+    state.data.minHomeDeliveryQuantity = parseInt(text) || 0;
+    
+    // Step 9: specific prompts based on category
+    const cat = state.data.categoryId as string;
+    if (cat.toLowerCase() === 'aata') {
+      state.step = 'add_spec_aata_1';
+      bot.sendMessage(chatId, 'Step 9/10: Wheat Variety? (e.g. Desi, Sharbati, Lokwan)');
+    } else if (cat.toLowerCase() === 'rice') {
+      state.step = 'add_spec_rice_1';
+      bot.sendMessage(chatId, 'Step 9/10: Grain type? (Basmati / Sona Masoori)');
+    } else if (cat.toLowerCase() === 'oil') {
+      state.step = 'add_spec_oil_1';
+      bot.sendMessage(chatId, 'Step 9/10: Extraction type? (Cold pressed / Refined)');
+    } else if (cat.toLowerCase() === 'spices') {
+      state.step = 'add_spec_spices_1';
+      bot.sendMessage(chatId, 'Step 9/10: Spice Form? (Whole / Powdered)');
+    } else {
+      // Skipping category specifics for unknown
+      state.step = 'add_preview';
+      bot.sendMessage(chatId, `Step 10/10: *Preview*\nName: ${state.data.name}\nPrice: ₹${state.data.price}\nPacks: ${state.data.packSizes}\nStock: ${state.data.stock}\nMin Delivery: ${state.data.minHomeDeliveryQuantity}kg\n\nType "yes" to confirm or "cancel".`, { parse_mode: 'Markdown' });
+    }
+  }
+  
+  // Aata Specifics
+  else if (state.step === 'add_spec_aata_1') {
+    state.data.spec_wheat_type = text; state.step = 'add_spec_aata_2';
+    bot.sendMessage(chatId, 'Processing Method? (e.g. Chakki Ground)');
+  } else if (state.step === 'add_spec_aata_2') {
+    state.data.spec_grinding_type = text; state.step = 'add_spec_aata_3';
+    bot.sendMessage(chatId, 'Dietary Information? (e.g. High Fibre, No Added Maida)');
+  } else if (state.step === 'add_spec_aata_3') {
+    state.data.spec_dietary = text; state.step = 'add_preview';
+    bot.sendMessage(chatId, `Step 10/10: *Preview*\nName: ${state.data.name}\nPrice: ₹${state.data.price}\nPacks: ${state.data.packSizes}\nStock: ${state.data.stock}\nMin Delivery: ${state.data.minHomeDeliveryQuantity}kg\n\nType "yes" to confirm or "cancel".`, { parse_mode: 'Markdown' });
+  }
+  
+  // Rice Specifics
+  else if (state.step === 'add_spec_rice_1') {
+    state.data.spec_grain_type = text; state.step = 'add_spec_rice_2';
+    bot.sendMessage(chatId, 'Aged? (Yes / No)');
+  } else if (state.step === 'add_spec_rice_2') {
+    state.data.spec_aged = text; state.step = 'add_preview';
+    bot.sendMessage(chatId, `Step 10/10: *Preview*\nName: ${state.data.name}\nPrice: ₹${state.data.price}\nPacks: ${state.data.packSizes}\nStock: ${state.data.stock}\nMin Delivery: ${state.data.minHomeDeliveryQuantity}kg\n\nType "yes" to confirm or "cancel".`, { parse_mode: 'Markdown' });
+  }
+  
+  // Oil Specifics
+  else if (state.step === 'add_spec_oil_1') {
+    state.data.spec_extraction_type = text; state.step = 'add_preview';
+    bot.sendMessage(chatId, `Step 10/10: *Preview*\nName: ${state.data.name}\nPrice: ₹${state.data.price}\nPacks: ${state.data.packSizes}\nStock: ${state.data.stock}\nMin Delivery: ${state.data.minHomeDeliveryQuantity}kg\n\nType "yes" to confirm or "cancel".`, { parse_mode: 'Markdown' });
+  }
+  
+  // Spices Specifics
+  else if (state.step === 'add_spec_spices_1') {
+    state.data.spec_spice_form = text; state.step = 'add_preview';
+    bot.sendMessage(chatId, `Step 10/10: *Preview*\nName: ${state.data.name}\nPrice: ₹${state.data.price}\nPacks: ${state.data.packSizes}\nStock: ${state.data.stock}\nMin Delivery: ${state.data.minHomeDeliveryQuantity}kg\n\nType "yes" to confirm or "cancel".`, { parse_mode: 'Markdown' });
+  }
+  
+  // Final Save
+  else if (state.step === 'add_preview') {
+    if (text.toLowerCase() === 'cancel') {
+      wizards.delete(chatId);
+      bot.sendMessage(chatId, '❌ Cancelled product addition.', menu());
+      return;
+    }
+    
+    const p = state.data.price as number;
+    const cat = state.data.categoryId as string;
+    
+    // Build specs
+    const specs: Record<string, string> = {};
+    if (cat.toLowerCase() === 'aata') {
+      specs.wheat_type = state.data.spec_wheat_type as string;
+      specs.processing_method = state.data.spec_grinding_type as string;
+      specs.dietary_info = state.data.spec_dietary as string;
+    } else if (cat.toLowerCase() === 'rice') {
+      specs.grain_type = state.data.spec_grain_type as string;
+      specs.aged = state.data.spec_aged as string;
+    } else if (cat.toLowerCase() === 'oil') {
+      specs.extraction_method = state.data.spec_extraction_type as string;
+    } else if (cat.toLowerCase() === 'spices') {
+      specs.spice_form = state.data.spec_spice_form as string;
+    }
+
+    const payload = {
+      name: state.data.name,
+      description: state.data.description,
+      categoryId: cat,
+      price: p,
+      packSizes: (state.data.packSizes as string).split(',').map(s=>Number(s.trim())),
+      stock: state.data.stock,
+      imageUrl: state.data.imageUrl || '',
+      specifications: specs,
+      minHomeDeliveryQuantity: state.data.minHomeDeliveryQuantity
+    };
+    
     try {
-      const p = state.data.price as number;
-      const d = state.data.discount as number;
-      const payload = {
-        name: state.data.name,
-        nameHi: state.data.nameHi,
-        price: p,
-        discount: d,
-        finalPrice: p - (p * d / 100),
-        stock: state.data.stock,
-        categoryId: state.data.categoryId,
-        unitType: 'kg',
-        imageUrl: state.data.imageUrl,
-      };
       const { data } = await axios.post(`${API}/api/products`, payload);
-      bot.sendMessage(chatId, `✅ *Product Created!*\n\nID: \`${data.product.productId}\`\nName: ${data.product.name}\nPrice: ₹${data.product.finalPrice}`, { parse_mode: 'Markdown', ...menu() });
+      bot.sendMessage(chatId, `✅ *Product Created!*\n\nID: \`${data.product.productId}\`\nName: ${data.product.name}\nSlug: ${data.product.slug}`, { parse_mode: 'Markdown', ...menu() });
     } catch (e) {
       bot.sendMessage(chatId, `❌ Failed to create product: ${(e as Error).message}`, menu());
     }

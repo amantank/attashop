@@ -3,7 +3,14 @@ import { v4 as uuidv4 } from 'uuid';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import Product, { IProductVariant } from '../models/Product';
+import Product, { IProductVariant, IProduct } from '../models/Product';
+// Using a basic slugify function
+const slugify = (text: string) => text.toString().toLowerCase()
+  .replace(/\s+/g, '-')
+  .replace(/[^\w-]+/g, '')
+  .replace(/--+/g, '-')
+  .replace(/^-+/, '')
+  .replace(/-+$/, '');
 
 const router = express.Router();
 
@@ -45,10 +52,12 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/products/:id
+// GET /api/products/:id (by productId or slug)
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const product = await Product.findOne({ productId: req.params.id });
+    const product = await Product.findOne({
+      $or: [{ productId: req.params.id }, { slug: req.params.id }],
+    });
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
     res.json({ success: true, product });
   } catch (err) {
@@ -59,32 +68,76 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST /api/products – create
 router.post('/', upload.single('image'), async (req: Request, res: Response) => {
   try {
-    const { name, nameHi, description, descriptionHi, price, discount, stock, categoryId, unitType, isFeatured, tags } = req.body;
-    const variants: IProductVariant[] = req.body.variants ? JSON.parse(req.body.variants) : [];
-    const discountNum = Number(discount) || 0;
-    const priceNum = Number(price);
-    const finalPrice = priceNum - (priceNum * discountNum) / 100;
-    const imageUrl = req.file
-      ? `/uploads/products/${req.file.filename}`
-      : (req.body.imageUrl || '');
+    const data = req.body;
+    
+    // Slug generation
+    let slug = data.slug;
+    if (!slug && data.name) slug = slugify(data.name);
+
+    // Pricing & Variants
+    const basePrice = Number(data.price || data.basePrice || 0);
+    const unit = data.unit || 'kg';
+    const mrp = Number(data.mrp || 0);
+    
+    let variants: IProductVariant[] = [];
+    if (data.variants && typeof data.variants === 'string') {
+      try { variants = JSON.parse(data.variants); } catch (e) { /* ignore */ }
+    } else if (Array.isArray(data.variants)) {
+      variants = data.variants;
+    }
+
+    if (variants.length === 0 && data.packSizes) {
+      let sizes: number[] = [];
+      if (typeof data.packSizes === 'string') {
+        sizes = data.packSizes.split(',').map((s: string) => Number(s.trim()));
+      } else if (Array.isArray(data.packSizes)) {
+        sizes = data.packSizes.map(Number);
+      }
+      variants = sizes.map((weight: number) => ({
+        weight,
+        unit,
+        price: basePrice * weight
+      }));
+    }
+
+    // Inventory status
+    let quantity = Number(data.stock || data.quantity || 0);
+    let lowStockThreshold = Number(data.lowStockThreshold || 10);
+    let stockStatus = 'in_stock';
+    if (quantity === 0) stockStatus = 'out_of_stock';
+    else if (quantity <= lowStockThreshold) stockStatus = 'low_stock';
+
+    // Specification mapping
+    let specifications = {};
+    if (data.specifications && typeof data.specifications === 'string') {
+      try { specifications = JSON.parse(data.specifications); } catch (e) { /* ignore */ }
+    } else if (typeof data.specifications === 'object') {
+      specifications = data.specifications;
+    }
+
+    const images: string[] = [];
+    if (req.file) images.push(`/uploads/products/${req.file.filename}`);
+    else if (data.imageUrl) images.push(data.imageUrl);
 
     const product = new Product({
       productId: uuidv4(),
-      name, nameHi, description, descriptionHi,
-      price: priceNum,
-      discount: discountNum,
-      finalPrice,
-      imageUrl,
-      stock: Number(stock) || 0,
-      categoryId,
-      unitType: unitType || 'kg',
-      variants: variants.map(v => ({
-        ...v,
-        variantId: v.variantId || uuidv4(),
-        finalPrice: v.price - (v.price * (v.discount || 0)) / 100,
-      })),
-      isFeatured: isFeatured === 'true' || isFeatured === true,
-      tags: tags ? JSON.parse(tags) : [],
+      name: data.name,
+      slug,
+      categoryId: data.categoryId,
+      description: data.description || '',
+      brand: data.brand || '',
+      images,
+      pricing: { basePrice, unit, mrp },
+      variants,
+      inventory: { quantity, unit, lowStockThreshold },
+      minOrder: Number(data.minOrder || 1),
+      minHomeDeliveryQuantity: Number(data.minHomeDeliveryQuantity || 0),
+      stockStatus,
+      specifications,
+      tags: data.tags ? (typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags) : [],
+      isActive: data.isActive === undefined ? true : data.isActive === 'true' || data.isActive === true,
+      isFeatured: data.isFeatured === 'true' || data.isFeatured === true,
+      priority: Number(data.priority || 0),
     });
 
     await product.save();
@@ -97,20 +150,60 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
 // PUT /api/products/:id – update
 router.put('/:id', upload.single('image'), async (req: Request, res: Response) => {
   try {
-    const product = await Product.findOne({ productId: req.params.id });
+    const product = await Product.findOne({ productId: req.params.id }) as IProduct;
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
-    const fields = ['name', 'nameHi', 'description', 'descriptionHi', 'discount', 'stock', 'categoryId', 'unitType', 'isFeatured'];
-    fields.forEach(f => { if (req.body[f] !== undefined) (product as unknown as Record<string, unknown>)[f] = req.body[f]; });
+    const data = req.body;
 
-    if (req.body.price) {
-      product.price = Number(req.body.price);
-      const disc = Number(req.body.discount ?? product.discount);
-      product.finalPrice = product.price - (product.price * disc) / 100;
+    if (data.name) {
+      product.name = data.name;
+      if (!data.slug) product.slug = slugify(data.name);
     }
-    if (req.file) product.imageUrl = `/uploads/products/${req.file.filename}`;
-    if (req.body.variants) product.variants = JSON.parse(req.body.variants);
-    if (req.body.tags) product.tags = JSON.parse(req.body.tags);
+    if (data.slug) product.slug = data.slug;
+    if (data.categoryId) product.categoryId = data.categoryId;
+    if (data.description !== undefined) product.description = data.description;
+    if (data.brand !== undefined) product.brand = data.brand;
+    
+    // Updates arrays
+    if (data.tags) product.tags = typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags;
+    if (req.file) {
+      product.images = [`/uploads/products/${req.file.filename}`]; // Replace for now, can be appended inside the model layer in a different iteration
+    }
+
+    if (data.price !== undefined || data.unit !== undefined || data.mrp !== undefined) {
+      product.pricing.basePrice = Number(data.price || data.basePrice || product.pricing.basePrice);
+      product.pricing.unit = data.unit || product.pricing.unit;
+      product.pricing.mrp = Number(data.mrp !== undefined ? data.mrp : product.pricing.mrp);
+    }
+
+    if (data.variants) {
+      product.variants = typeof data.variants === 'string' ? JSON.parse(data.variants) : data.variants;
+    }
+
+    if (data.stock !== undefined || data.quantity !== undefined || data.lowStockThreshold !== undefined) {
+      product.inventory.quantity = Number(data.stock !== undefined ? data.stock : (data.quantity !== undefined ? data.quantity : product.inventory.quantity));
+      product.inventory.lowStockThreshold = Number(data.lowStockThreshold !== undefined ? data.lowStockThreshold : product.inventory.lowStockThreshold);
+      
+      if (product.inventory.quantity === 0) product.stockStatus = 'out_of_stock';
+      else if (product.inventory.quantity <= product.inventory.lowStockThreshold) product.stockStatus = 'low_stock';
+      else product.stockStatus = 'in_stock';
+    }
+
+    if (data.specifications) {
+      product.specifications = typeof data.specifications === 'string' ? JSON.parse(data.specifications) : data.specifications;
+    }
+
+    const simpleFields = ['isActive', 'isFeatured', 'priority'];
+    simpleFields.forEach(f => {
+      if (data[f] !== undefined) {
+        if (f === 'priority') (product as any)[f] = Number(data[f]);
+        else (product as any)[f] = (data[f] === 'true' || data[f] === true);
+      }
+    });
+
+    if (data.minHomeDeliveryQuantity !== undefined) {
+      product.minHomeDeliveryQuantity = Number(data.minHomeDeliveryQuantity);
+    }
 
     await product.save();
     res.json({ success: true, product });
@@ -133,12 +226,16 @@ router.delete('/:id', async (req: Request, res: Response) => {
 router.patch('/:id/stock', async (req: Request, res: Response) => {
   try {
     const { stock } = req.body;
-    const product = await Product.findOneAndUpdate(
-      { productId: req.params.id },
-      { stock: Number(stock) },
-      { new: true }
-    );
+    const quantity = Number(stock);
+    const product = await Product.findOne({ productId: req.params.id }) as IProduct;
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    product.inventory.quantity = quantity;
+    if (quantity === 0) product.stockStatus = 'out_of_stock';
+    else if (quantity <= product.inventory.lowStockThreshold) product.stockStatus = 'low_stock';
+    else product.stockStatus = 'in_stock';
+
+    await product.save();
     res.json({ success: true, product });
   } catch (err) {
     res.status(500).json({ success: false, message: (err as Error).message });
@@ -146,3 +243,4 @@ router.patch('/:id/stock', async (req: Request, res: Response) => {
 });
 
 export default router;
+

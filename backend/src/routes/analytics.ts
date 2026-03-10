@@ -43,7 +43,7 @@ router.get('/', async (_req: Request, res: Response) => {
       .slice(0, 5);
 
     // Low stock products
-    const lowStock = await Product.find({ stock: { $lte: 10 }, isActive: true });
+    const lowStock = await Product.find({ 'inventory.stockStatus': { $in: ['low_stock', 'out_of_stock'] }, isActive: true });
 
     // Orders by slot (today)
     const ordersBySlot = await Order.aggregate([
@@ -60,7 +60,7 @@ router.get('/', async (_req: Request, res: Response) => {
         completedOrders,
         totalOrders,
         topProducts,
-        lowStock: lowStock.map(p => ({ productId: p.productId, name: p.name, stock: p.stock })),
+        lowStock: lowStock.map(p => ({ productId: p.productId, name: p.name, stock: p.inventory.quantity })),
         ordersBySlot,
       },
     });

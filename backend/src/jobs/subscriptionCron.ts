@@ -40,10 +40,10 @@ export function startSubscriptionCron(): void {
           continue;
         }
 
-        let unitPrice = product.finalPrice;
+        let unitPrice = product.pricing.basePrice;
         if (sub.variantId) {
-          const v = product.variants.find(x => x.variantId === sub.variantId);
-          if (v) unitPrice = v.finalPrice;
+          const v = product.variants.find(x => (x as any)._id?.toString() === sub.variantId);
+          if (v) unitPrice = v.price;
         }
 
         const totalPrice = unitPrice * sub.quantity;
