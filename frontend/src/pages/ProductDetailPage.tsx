@@ -275,6 +275,22 @@ export default function ProductDetailPage() {
               </button>
             )}
           </div>
+          
+          {/* Specifications */}
+          {((lang === 'hi' && product.specificationsHi && Object.keys(product.specificationsHi).length > 0) || 
+            (product.specifications && Object.keys(product.specifications).length > 0)) && (
+            <div className="mt-6 border-t border-stone-100 pt-6">
+              <h3 className="text-lg font-bold text-stone-900 mb-4">{t('specifications') || (lang === 'hi' ? 'विशेष विवरण' : 'Specifications')}</h3>
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                {Object.entries((lang === 'hi' && product.specificationsHi && Object.keys(product.specificationsHi).length > 0) ? product.specificationsHi : (product.specifications || {})).map(([key, value]) => (
+                  <div key={key} className="flex flex-col bg-stone-50 p-3 rounded-xl border border-stone-100">
+                    <span className="text-stone-500 font-medium text-xs uppercase tracking-wider mb-1">{key}</span>
+                    <span className="text-stone-800 font-semibold">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

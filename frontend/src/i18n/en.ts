@@ -126,12 +126,14 @@ const en = {
   loading: 'Loading…',
   error: 'Something went wrong.',
   retry: 'Retry',
+  remove: 'Remove',
   save: 'Save',
   cancel: 'Cancel',
   close: 'Close',
   pcs: 'pcs',
   kg: 'kg',
   items: 'items',
+  specifications: 'Specifications',
 };
 
 export default en;

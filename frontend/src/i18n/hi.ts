@@ -129,6 +129,8 @@ const hi: Record<TranslationKey, string> = {
   error: 'कुछ गड़बड़ हो गई।',
   retry: 'पुनः प्रयास',
   save: 'सहेजें',
+  remove: 'निकालें',
+  specifications: 'विशेष विवरण',
   cancel: 'रद्द करें',
   close: 'बंद करें',
   pcs: 'पीस',

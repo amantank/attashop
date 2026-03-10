@@ -115,6 +115,13 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
       specifications = data.specifications;
     }
 
+    let specificationsHi = {};
+    if (data.specificationsHi && typeof data.specificationsHi === 'string') {
+      try { specificationsHi = JSON.parse(data.specificationsHi); } catch (e) { /* ignore */ }
+    } else if (typeof data.specificationsHi === 'object') {
+      specificationsHi = data.specificationsHi;
+    }
+
     const images: string[] = [];
     if (req.file) images.push(`/uploads/products/${req.file.filename}`);
     else if (data.imageUrl) images.push(data.imageUrl);
@@ -134,6 +141,7 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
       minHomeDeliveryQuantity: Number(data.minHomeDeliveryQuantity || 0),
       stockStatus,
       specifications,
+      specificationsHi,
       tags: data.tags ? (typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags) : [],
       isActive: data.isActive === undefined ? true : data.isActive === 'true' || data.isActive === true,
       isFeatured: data.isFeatured === 'true' || data.isFeatured === true,
@@ -191,6 +199,10 @@ router.put('/:id', upload.single('image'), async (req: Request, res: Response) =
 
     if (data.specifications) {
       product.specifications = typeof data.specifications === 'string' ? JSON.parse(data.specifications) : data.specifications;
+    }
+
+    if (data.specificationsHi) {
+      product.specificationsHi = typeof data.specificationsHi === 'string' ? JSON.parse(data.specificationsHi) : data.specificationsHi;
     }
 
     const simpleFields = ['isActive', 'isFeatured', 'priority'];

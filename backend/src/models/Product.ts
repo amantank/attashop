@@ -37,6 +37,8 @@ export interface IProduct extends Document {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   specifications: any;      // Schema.Types.Mixed
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  specificationsHi: any;    // Schema.Types.Mixed
 
   tags: string[];
 
@@ -90,6 +92,7 @@ const ProductSchema = new Schema<IProduct>(
     },
 
     specifications: { type: Schema.Types.Mixed, default: {} },
+    specificationsHi: { type: Schema.Types.Mixed, default: {} },
 
     tags: { type: [String], default: [] },
 

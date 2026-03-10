@@ -31,6 +31,8 @@ export interface Product {
   stockStatus: 'in_stock' | 'low_stock' | 'out_of_stock';
   minOrder: number;
   minHomeDeliveryQuantity: number;
+  specifications?: Record<string, string>;
+  specificationsHi?: Record<string, string>;
   
   categoryId: string;
   variants: ProductVariant[];
