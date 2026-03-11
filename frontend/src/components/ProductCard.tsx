@@ -14,8 +14,9 @@ export default function ProductCard({ product }: Props) {
   const addItem = useCartStore(s => s.addItem);
 
   const name = lang === 'hi' && product.nameHi ? product.nameHi : product.name;
-  const hasVariants = product.variants.length > 0;
-  const defaultVariant = hasVariants ? product.variants[0] : null;
+  const validVariants = product.variants?.filter(v => v.price > 0 && v.weight > 0) || [];
+  const hasVariants = validVariants.length > 0;
+  const defaultVariant = hasVariants ? validVariants[0] : null;
   const displayPrice = (defaultVariant && defaultVariant.price > 0) ? defaultVariant.price : product.pricing.basePrice;
   const basePrice    = product.pricing.mrp > displayPrice ? product.pricing.mrp : displayPrice;
   const discount     = basePrice > displayPrice ? Math.round(((basePrice - displayPrice) / basePrice) * 100) : 0;
@@ -77,7 +78,7 @@ export default function ProductCard({ product }: Props) {
           {/* Variant size pills */}
           {hasVariants && (
             <div className="flex flex-wrap gap-1 mb-2">
-              {product.variants.slice(0, 3).map((v, i) => (
+              {validVariants.slice(0, 3).map((v, i) => (
                 <span key={v._id || i} className="px-2 py-0.5 text-[10px] font-semibold border border-stone-200 rounded-full text-stone-500">
                   {v.weight > 0 ? `${v.weight}${v.unit}` : 'Loose'}
                 </span>

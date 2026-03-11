@@ -70,7 +70,11 @@ router.post('/', async (req: Request, res: Response) => {
 
       if (item.variantId) {
         const variant = product.variants.find(v => (v as any)._id?.toString() === item.variantId);
-        if (variant) { unitPrice = variant.price; variantId = (variant as any)._id?.toString(); size = `${variant.weight}${variant.unit}`; }
+        if (variant && variant.price > 0 && variant.weight > 0) { 
+          unitPrice = variant.price; 
+          variantId = (variant as any)._id?.toString(); 
+          size = `${variant.weight}${variant.unit}`; 
+        }
       }
 
       const itemTotal = unitPrice * item.quantity;

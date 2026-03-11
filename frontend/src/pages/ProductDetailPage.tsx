@@ -34,10 +34,11 @@ export default function ProductDetailPage() {
 
   const name = lang === 'hi' && product.nameHi ? product.nameHi : product.name;
   const description = lang === 'hi' && product.descriptionHi ? product.descriptionHi : product.description;
-  const hasVariants = product.variants.length > 0;
+  const validVariants = product.variants?.filter(v => v.price > 0 && v.weight > 0) || [];
+  const hasVariants = validVariants.length > 0;
 
   const selectedVariant = hasVariants
-    ? product.variants.find(v => v._id === selectedVariantId) || product.variants[0]
+    ? validVariants.find(v => v._id === selectedVariantId) || validVariants[0]
     : null;
 
   const displayPrice = (selectedVariant && selectedVariant.price > 0) ? selectedVariant.price : product.pricing.basePrice;
@@ -157,7 +158,7 @@ export default function ProductDetailPage() {
             <div>
               <p className="label">{t('selectVariant')}</p>
               <div className="flex flex-wrap gap-2">
-                {product.variants.map((v, i) => {
+                {validVariants.map((v, i) => {
                   const truePrice = v.price > 0 ? v.price : product.pricing.basePrice;
                   return (
                   <button
@@ -165,7 +166,7 @@ export default function ProductDetailPage() {
                     onClick={() => setSelectedVariantId(v._id)}
                     disabled={isOutOfStock}
                     className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                      (selectedVariantId || product.variants[0]._id) === v._id
+                      (selectedVariantId || validVariants[0]._id) === v._id
                         ? 'border-amber-500 bg-amber-500 text-white shadow-md'
                         : isOutOfStock
                           ? 'border-stone-200 bg-stone-50 text-stone-300 cursor-not-allowed'
