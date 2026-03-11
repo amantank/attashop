@@ -93,11 +93,13 @@ router.post('/', upload.single('image'), async (req: Request, res: Response) => 
       } else if (Array.isArray(data.packSizes)) {
         sizes = data.packSizes.map(Number);
       }
-      variants = sizes.map((weight: number) => ({
-        weight,
-        unit,
-        price: basePrice * weight
-      }));
+      variants = sizes
+        .filter((w) => !isNaN(w) && w > 0)
+        .map((weight: number) => ({
+          weight,
+          unit,
+          price: basePrice * weight
+        }));
     }
 
     // Inventory status

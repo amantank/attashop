@@ -116,6 +116,7 @@ bot.onText(/^\/add(?:$|\s+([\s\S]*))/, async (msg, match) => {
 
 // ── ADD PRODUCT WIZARD ────────────────────────────────────
 bot.onText(/\/add_product|➕ Add Product/, msg => {
+  wizards.set(msg.chat.id, { step: 'add_image', data: {} });
   bot.sendMessage(msg.chat.id, '📝 *Add New Product*\n\nStep 1/11: Send product *image* (or type /skip):', { parse_mode: 'Markdown' });
 });
 
