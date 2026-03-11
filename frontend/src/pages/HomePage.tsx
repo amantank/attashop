@@ -159,17 +159,19 @@ export default function HomePage() {
             );
           })}
           {/* Fallback static categories */}
-          {!categoriesData?.categories?.length && [
+          {[
             { name: 'Atta', nameHi: 'आटा', icon: '🌾' },
             { name: 'Rice', nameHi: 'चावल', icon: '🍚' },
             { name: 'Dal', nameHi: 'दाल', icon: '🫘' },
             { name: 'Spices', nameHi: 'मसाले', icon: '🌶️' },
             { name: 'Oil', nameHi: 'तेल', icon: '🫙' },
-          ].map(cat => (
+          ]
+            .filter(cat => !(categoriesData?.categories || []).some(dbCat => dbCat.name.toLowerCase() === cat.name.toLowerCase()))
+            .map(cat => (
             <Link
               key={cat.name}
               to={`/products?category=${cat.name}`}
-              className="card p-4 flex flex-col items-center gap-2 hover:border-amber-300 hover:-translate-y-1 transition-all"
+              className="card p-4 flex flex-col items-center gap-2 hover:border-amber-300 hover:-translate-y-1 transition-all cursor-pointer"
             >
               <span className="text-3xl">{cat.icon}</span>
               <span className="text-xs font-bold text-stone-700 text-center">

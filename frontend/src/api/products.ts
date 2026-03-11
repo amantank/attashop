@@ -13,7 +13,14 @@ export const getProducts = (params?: {
   featured?: boolean;
   page?: number;
   limit?: number;
-}) => client.get<ProductsResponse>('/api/products', { params }).then(r => r.data);
+}) => {
+  const apiParams: any = { ...params };
+  if (apiParams.category) {
+    apiParams.categoryId = apiParams.category;
+    delete apiParams.category;
+  }
+  return client.get<ProductsResponse>('/api/products', { params: apiParams }).then(r => r.data);
+};
 
 export const getProduct = (productId: string) =>
   client.get<{ success: boolean; product: Product }>(`/api/products/${productId}`).then(r => r.data);

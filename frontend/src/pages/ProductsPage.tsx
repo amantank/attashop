@@ -26,7 +26,6 @@ export default function ProductsPage() {
   const cats = categoriesData?.categories || [];
 
   const fallbackCats = [
-    { categoryId: '', name: t('allCategories'), nameHi: t('allCategories') },
     { categoryId: 'Atta', name: 'Atta', nameHi: 'आटा' },
     { categoryId: 'Rice', name: 'Rice', nameHi: 'चावल' },
     { categoryId: 'Dal', name: 'Dal', nameHi: 'दाल' },
@@ -34,9 +33,11 @@ export default function ProductsPage() {
     { categoryId: 'Oil', name: 'Oil', nameHi: 'तेल' },
   ];
 
-  const displayCats = cats.length > 0
-    ? [{ categoryId: '', name: t('allCategories'), nameHi: t('allCategories') }, ...cats]
-    : fallbackCats;
+  const displayCats = [
+    { categoryId: '', name: t('allCategories'), nameHi: t('allCategories') },
+    ...fallbackCats.filter(c => !cats.some(dbCat => dbCat.name.toLowerCase() === c.name.toLowerCase())),
+    ...cats
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">

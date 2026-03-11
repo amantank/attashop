@@ -35,7 +35,12 @@ router.get('/', async (req: Request, res: Response) => {
     const query: Record<string, any> = { isActive: true };
 
     if (search) {
-      query.$text = { $search: search as string };
+      const searchRegex = new RegExp(String(search).trim(), 'i');
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { tags: searchRegex },
+      ];
     }
     if (categoryId) query.categoryId = categoryId;
     if (featured === 'true') query.isFeatured = true;
