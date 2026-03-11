@@ -15,15 +15,24 @@ import deliveryRoutes from './routes/delivery';
 import analyticsRoutes from './routes/analytics';
 import customerRoutes from './routes/customers';
 import { startSubscriptionCron } from './jobs/subscriptionCron';
+import webhookRoutes from './routes/webhooks';
+import http from 'http';
+import { initializeSocket } from './services/socket';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
+initializeSocket(server);
 
 // ── Middleware ─────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: process.env.FRONTEND_URL || '*', credentials: true }));
+
+// Webhooks require raw body for signature verification, so we capture it before global json parsing
+app.use('/api/webhooks', webhookRoutes);
+
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('combined'));
 app.use(rateLimiter);
@@ -50,7 +59,7 @@ app.use(errorHandler);
 
 // ── Start ─────────────────────────────────────────────────
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`🚀 AtlaShop backend running on port ${PORT}`);
     startSubscriptionCron();
   });

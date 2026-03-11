@@ -1,0 +1,38 @@
+﻿attashop-backend  | Γ£à MongoDB connected
+attashop-backend  | ≡ƒÜÇ AtlaShop backend running on port 5000
+attashop-backend  | ≡ƒôà Subscription cron job scheduled (daily 6AM)
+attashop-backend  | ≡ƒöî Client connected to socket: z001IJXPVt12HkiwAAAB
+attashop-backend  | ValidationError: The 'X-Forwarded-For' header is set but the Express 'trust proxy' setting is false (default). This could indicate a misconfiguration which would prevent express-rate-limit from accurately identifying users. See https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/ for more information.
+attashop-backend  |     at Object.xForwardedForHeader (/app/node_modules/express-rate-limit/dist/index.cjs:185:13)
+attashop-backend  |     at wrappedValidations.<computed> [as xForwardedForHeader] (/app/node_modules/express-rate-limit/dist/index.cjs:397:22)
+attashop-backend  |     at Object.keyGenerator (/app/node_modules/express-rate-limit/dist/index.cjs:658:20)
+attashop-backend  |     at /app/node_modules/express-rate-limit/dist/index.cjs:710:32
+attashop-backend  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+attashop-backend  |     at async /app/node_modules/express-rate-limit/dist/index.cjs:691:5 {
+attashop-backend  |   code: 'ERR_ERL_UNEXPECTED_X_FORWARDED_FOR',
+attashop-backend  |   help: 'https://express-rate-limit.github.io/ERR_ERL_UNEXPECTED_X_FORWARDED_FOR/'
+attashop-backend  | }
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:36 +0000] "GET /api/api/products?featured=true&limit=8 HTTP/1.1" 404 155 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:36 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:36 +0000] "GET /api/api/customers/6376046417/orders HTTP/1.1" 404 174 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:37 +0000] "GET /api/api/products?featured=true&limit=8 HTTP/1.1" 404 155 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:37 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:37 +0000] "GET /api/api/customers/6376046417/orders HTTP/1.1" 404 174 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ≡ƒöî Client disconnected: z001IJXPVt12HkiwAAAB
+attashop-backend  | ≡ƒöî Client connected to socket: eTbBNfZw-KP7lgQbAAAD
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:40 +0000] "GET /api/api/products?featured=true&limit=8 HTTP/1.1" 404 155 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:40 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:40 +0000] "GET /api/api/customers/6376046417/orders HTTP/1.1" 404 174 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:41 +0000] "GET /api/api/products?featured=true&limit=8 HTTP/1.1" 404 155 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:41 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:41 +0000] "GET /api/api/customers/6376046417/orders HTTP/1.1" 404 174 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:43 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:43 +0000] "GET /api/api/products?category=Atta&limit=50 HTTP/1.1" 404 155 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:45 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:45 +0000] "GET /api/api/products?category=Atta&limit=50 HTTP/1.1" 404 155 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ≡ƒöî Client disconnected: eTbBNfZw-KP7lgQbAAAD
+attashop-backend  | ≡ƒöî Client connected to socket: MUWqhDb8CL-w1NV4AAAF
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:51 +0000] "GET /api/api/products?category=Atta&limit=50 HTTP/1.1" 404 155 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:51 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:52 +0000] "GET /api/api/products?category=Atta&limit=50 HTTP/1.1" 404 155 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+attashop-backend  | ::ffff:172.19.0.7 - - [11/Mar/2026:10:08:52 +0000] "GET /api/api/categories HTTP/1.1" 404 157 "http://localhost/products?category=Atta" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"

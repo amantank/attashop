@@ -58,6 +58,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=
+        - VITE_UPI_ID=${UPI_ID:-}
+        - VITE_SHOP_NAME=${BUSINESS_NAME:-}
     container_name: attashop-frontend
     restart: unless-stopped
     networks:

@@ -7,6 +7,7 @@ import DeliveryCharge from '../models/DeliveryCharge';
 import DeliverySlot from '../models/DeliverySlot';
 import { generateInvoice } from '../services/invoiceService';
 import { sendOrderNotification } from '../services/telegramService';
+import { emitPaymentStatusUpdate } from '../services/socket';
 
 const router = express.Router();
 
@@ -171,6 +172,12 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
     if (paymentStatus) update.paymentStatus = paymentStatus;
     const order = await Order.findOneAndUpdate({ orderId: req.params.id }, update, { new: true });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    
+    // Broadcast payment status real-time update
+    if (paymentStatus) {
+      emitPaymentStatusUpdate(order.orderId, paymentStatus);
+    }
+    
     res.json({ success: true, order });
   } catch (err) {
     res.status(500).json({ success: false, message: (err as Error).message });

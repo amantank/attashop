@@ -6,6 +6,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { getOrder } from '../api/orders';
 import { Loader, ErrorMessage } from '../components/Loader';
 import OrderStatusBadge from '../components/OrderStatusBadge';
+import { QRCodeSVG } from 'qrcode.react';
+import { socket } from '../services/socket';
 
 export default function OrderConfirmationPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -17,20 +19,63 @@ export default function OrderConfirmationPage() {
     enabled: !!orderId,
   });
 
-  if (isLoading) return <Loader text={t('loading')} />;
-  if (isError || !data?.order) return <ErrorMessage message={t('error')} onRetry={() => refetch()} />;
+  const order = data?.order;
 
-  const order = data.order;
+  // React to realtime payment updates
+  useEffect(() => {
+    if (!orderId || !order) return;
+    
+    if (order.paymentStatus === 'pending' && ['upi', 'gpay', 'paytm'].includes(order.paymentMethod)) {
+      socket.emit('join_order_room', orderId);
+
+      const handlePaymentUpdate = (update: { orderId: string; status: string }) => {
+        if (update.orderId === orderId && update.status === 'paid') {
+          refetch();
+        }
+      };
+
+      socket.on('payment_updated', handlePaymentUpdate);
+
+      return () => {
+        socket.off('payment_updated', handlePaymentUpdate);
+      };
+    }
+  }, [orderId, order, refetch]);
+
+  if (isLoading) return <Loader text={t('loading')} />;
+  if (isError || !order) return <ErrorMessage message={t('error')} onRetry={() => refetch()} />;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
-      {/* Success animation */}
-      <div className="text-center mb-8">
-        <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center animate-bounce-in mb-4">
-          <CheckCircle2 size={44} className="text-green-600" />
-        </div>
-        <h1 className="text-2xl font-extrabold text-stone-900 mb-1">{t('orderPlaced')}</h1>
-        <p className="text-stone-500 text-sm">{t('orderConfirmMsg')}</p>
+      {/* Success / Pending animation */}
+      <div className="text-center mb-8 h-[300px] flex flex-col justify-center items-center relative">
+        {order.paymentStatus === 'pending' && ['upi', 'gpay', 'paytm'].includes(order.paymentMethod) ? (
+          <div className="flex flex-col items-center animate-fade-in absolute w-full inset-0">
+            <div className="p-4 bg-white rounded-2xl shadow-sm border border-stone-200 inline-block mb-4 mt-2">
+              <QRCodeSVG 
+                value={`upi://pay?pa=${import.meta.env.VITE_UPI_ID || 'store@upi'}&pn=${import.meta.env.VITE_SHOP_NAME || 'Store'}&am=${order.finalAmount}&cu=INR`} 
+                size={160}
+                level="H"
+              />
+            </div>
+            <h1 className="text-lg font-extrabold text-stone-900 mb-2">Waiting for Payment...</h1>
+            <p className="text-sm text-stone-500 mb-3">
+              Scan QR code to pay <strong className="text-stone-800">₹{order.finalAmount.toFixed(0)}</strong>
+            </p>
+            <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-1.5 rounded-full text-xs font-bold border border-amber-200 shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              Real-time sync active
+            </div>
+          </div>
+        ) : (
+          <div className="animate-bounce-in absolute w-full inset-0 flex flex-col items-center justify-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
+              <CheckCircle2 size={44} className="text-green-600" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-stone-900 mb-1">{t('orderPlaced')}</h1>
+            <p className="text-stone-500 text-sm hidden sm:block">{t('orderConfirmMsg')}</p>
+          </div>
+        )}
       </div>
 
       <div className="card p-6 space-y-5">

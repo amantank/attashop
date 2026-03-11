@@ -32,10 +32,10 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const sub = subtotal();
 
-  // Redirect if cart empty
+  // Redirect if cart empty - but only if we are not actively placing an order
   useEffect(() => {
-    if (items.length === 0) navigate('/cart');
-  }, [items.length, navigate]);
+    if (items.length === 0 && !placing) navigate('/cart');
+  }, [items.length, navigate, placing]);
 
   // Min delivery date = tomorrow
   const tomorrow = new Date();
