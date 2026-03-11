@@ -28,7 +28,7 @@ const hi: Record<TranslationKey, string> = {
   viewDetails: 'विवरण देखें',
   discount: 'छूट',
   inStock: 'उपलब्ध',
-  selectVariant: 'साइज़ चुनें',
+  selectVariant: 'पैक चुनें',
   quantity: 'मात्रा',
   subscribeProduct: 'नियमित डिलीवरी के लिए सब्सक्राइब करें',
   subscriptionPlan: 'डिलीवरी आवृत्ति',

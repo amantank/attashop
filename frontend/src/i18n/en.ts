@@ -26,7 +26,7 @@ const en = {
   viewDetails: 'View Details',
   discount: 'OFF',
   inStock: 'In Stock',
-  selectVariant: 'Select Size',
+  selectVariant: 'Select Pack',
   quantity: 'Quantity',
   subscribeProduct: 'Subscribe for regular delivery',
   subscriptionPlan: 'Delivery Frequency',
