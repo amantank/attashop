@@ -10,12 +10,12 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const navLinks = [
-    { to: '/products', label: t('products') },
-    { to: '/orders', label: t('orders') },
-    { to: '/subscriptions', label: t('subscriptions') },
-  ];
-
+const navLinks = [
+  { to: '/products', label: t('products') },
+  { to: '/offers', label: '🔥 ' + t('offers') },
+  { to: '/orders', label: t('orders') },
+  { to: '/subscriptions', label: t('subscriptions') },
+];
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-100 shadow-sm">
       <nav className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">

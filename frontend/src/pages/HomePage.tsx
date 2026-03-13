@@ -11,6 +11,7 @@ import { buildRepeatCartItems } from '../api/orders';
 import ProductCard from '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import { ProductCardSkeleton } from '../components/Loader';
+import OfferBanner from '../components/OfferBanner';
 import toast from 'react-hot-toast';
 
 // Category icons mapping
@@ -111,6 +112,7 @@ export default function HomePage() {
           <SearchBar />
         </div>
       </section>
+           <OfferBanner />
 
       {/* ── Reorder Banner ───────────────────────────────── */}
       {lastOrder && (

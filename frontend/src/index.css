@@ -176,3 +176,29 @@
     animation: shimmer 1.5s infinite;
   }
 }
+
+  /* Offer badge pulse */
+  @keyframes offerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .animate-offer-pulse { animation: offerPulse 2s ease-in-out infinite; }
+
+  /* Offer icon pulse for banners */
+  @keyframes iconPulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.15) rotate(-5deg); }
+    75% { transform: scale(1.15) rotate(5deg); }
+  }
+  .offer-icon-pulse { animation: iconPulse 2s ease-in-out infinite; }
+
+  /* Shimmer for sale strip */
+  @keyframes saleShimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .sale-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: saleShimmer 2s infinite;
+  }

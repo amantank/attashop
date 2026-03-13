@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart, Star, Zap } from 'lucide-react';
 import type { Product } from '../types';
 import { useCartStore } from '../store/cartStore';
 import { useLanguage } from '../context/LanguageContext';
+import { useActiveOffers, getProductOffer, calcOfferPrice } from './OfferBanner';
 import toast from 'react-hot-toast';
 
 interface Props { product: Product; }
@@ -12,6 +13,7 @@ const PLACEHOLDER = 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020
 export default function ProductCard({ product }: Props) {
   const { t, lang } = useLanguage();
   const addItem = useCartStore(s => s.addItem);
+  const offers = useActiveOffers();
 
   const name = lang === 'hi' && product.nameHi ? product.nameHi : product.name;
   const validVariants = product.variants?.filter(v => v.price > 0 && v.weight > 0) || [];
@@ -19,7 +21,18 @@ export default function ProductCard({ product }: Props) {
   const defaultVariant = hasVariants ? validVariants[0] : null;
   const displayPrice = (defaultVariant && defaultVariant.price > 0) ? defaultVariant.price : product.pricing.basePrice;
   const basePrice    = product.pricing.mrp > displayPrice ? product.pricing.mrp : displayPrice;
-  const discount     = basePrice > displayPrice ? Math.round(((basePrice - displayPrice) / basePrice) * 100) : 0;
+
+  // ─── Offer logic ───────────────────────────────────────
+  const offer = getProductOffer(product.productId, product.categoryId, offers);
+  const hasOffer = !!offer;
+  const offerPrice = hasOffer ? calcOfferPrice(displayPrice, offer!) : displayPrice;
+  const effectivePrice = hasOffer ? offerPrice : displayPrice;
+  const strikePrice = hasOffer ? displayPrice : (basePrice > displayPrice ? basePrice : 0);
+  const discountPct = strikePrice > 0
+    ? Math.round(((strikePrice - effectivePrice) / strikePrice) * 100)
+    : 0;
+  // ──────────────────────────────────────────────────────
+
   const totalStock   = product.inventory.quantity;
   const isOutOfStock = totalStock === 0 || product.stockStatus === 'out_of_stock';
 
@@ -34,15 +47,15 @@ export default function ProductCard({ product }: Props) {
       variantId: defaultVariant?._id,
       size: defaultVariant ? (defaultVariant.weight > 0 ? `${defaultVariant.weight}${defaultVariant.unit}` : 'Loose') : undefined,
       quantity: 1,
-      unitPrice: displayPrice,
+      unitPrice: effectivePrice,
       categoryId: product.categoryId,
     });
-    toast.success(`${name} ${t('addToCart')} ✓`);
+    toast.success(`${name} ${t('addToCart')} ✔`);
   };
 
   return (
     <Link to={`/products/${product.productId}`} className="block group">
-      <div className="card overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <div className={`card overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${hasOffer ? 'ring-2 ring-red-300 ring-offset-1' : ''}`}>
         {/* Image */}
         <div className="relative aspect-[4/3] overflow-hidden bg-amber-50">
           <img
@@ -51,12 +64,25 @@ export default function ProductCard({ product }: Props) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
-          {discount > 0 && (
-            <span className="absolute top-2 left-2 pill-amber text-[11px] font-bold shadow">
-              −{discount}% {t('discount')}
+
+          {/* Discount Badge — Offer takes priority */}
+          {discountPct > 0 && (
+            <span className={`absolute top-2 left-2 text-[11px] font-bold shadow flex items-center gap-1 px-2 py-1 rounded-full ${
+              hasOffer ? 'bg-red-500 text-white animate-offer-pulse' : 'pill-amber'
+            }`}>
+              {hasOffer && <Zap size={10} />}
+              −{discountPct}% {t('discount')}
             </span>
           )}
-          {product.isFeatured && (
+
+          {/* Flash sale strip */}
+          {hasOffer && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-red-500 to-orange-500 text-white text-[10px] font-bold text-center py-1 tracking-wider uppercase">
+              ⚡ {lang === 'hi' ? 'ऑफर' : 'SALE'}
+            </div>
+          )}
+
+          {product.isFeatured && !hasOffer && (
             <span className="absolute top-2 right-2 w-7 h-7 bg-yellow-400 rounded-full flex items-center justify-center shadow">
               <Star size={13} fill="white" className="text-white" />
             </span>
@@ -88,10 +114,12 @@ export default function ProductCard({ product }: Props) {
 
           {/* Price row */}
           <div className="flex items-center justify-between mt-1">
-            <div>
-              <span className="text-base font-extrabold text-stone-900">₹{displayPrice}</span>
-              {discount > 0 && (
-                <span className="text-xs text-stone-400 line-through ml-1.5">₹{basePrice}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-base font-extrabold ${hasOffer ? 'text-red-600' : 'text-stone-900'}`}>
+                ₹{effectivePrice}
+              </span>
+              {strikePrice > 0 && strikePrice !== effectivePrice && (
+                <span className="text-xs text-stone-400 line-through">₹{strikePrice}</span>
               )}
             </div>
             <button
@@ -100,6 +128,8 @@ export default function ProductCard({ product }: Props) {
               className={`p-2 rounded-xl transition-all ${
                 isOutOfStock
                   ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
+                  : hasOffer
+                  ? 'bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-red-200 active:scale-90'
                   : 'bg-amber-500 text-white hover:bg-amber-600 shadow-md hover:shadow-amber-200 active:scale-90'
               }`}
             >

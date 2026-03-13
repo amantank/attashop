@@ -18,6 +18,7 @@ import { startSubscriptionCron } from './jobs/subscriptionCron';
 import webhookRoutes from './routes/webhooks';
 import http from 'http';
 import { initializeSocket } from './services/socket';
+import offerRoutes from './routes/offers';
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/offers', offerRoutes);
 
 // ── Health check ───────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

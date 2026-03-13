@@ -160,3 +160,32 @@ export interface Analytics {
   completedOrders: number;
   topProducts: { productId: string; name: string; quantity: number; revenue: number }[];
 }
+
+// ─── Offer ────────────────────────────────────────────────────────────────────
+export type OfferType = 'flash_sale' | 'banner' | 'category_sale';
+export type DiscountType = 'percentage' | 'flat';
+export type OfferTheme = 'fire' | 'summer' | 'festival' | 'fresh' | 'royal';
+
+export interface Offer {
+  _id: string;
+  offerId: string;
+  title: string;
+  titleHi: string;
+  description: string;
+  descriptionHi: string;
+  type: OfferType;
+  discountType: DiscountType;
+  discountValue: number;
+  theme: OfferTheme;
+  bannerImage?: string;
+  applicableProducts: string[];
+  applicableCategories: string[];
+  minOrderAmount: number;
+  maxDiscount: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  priority: number;
+  usageCount: number;
+  createdAt: string;
+}

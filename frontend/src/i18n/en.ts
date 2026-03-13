@@ -48,6 +48,15 @@ const en = {
   total: 'Total',
   proceedToCheckout: 'Proceed to Checkout',
 
+    // Offers
+  offers: 'Offers',
+  flashSale: 'Flash Sale',
+  saleEndsIn: 'Sale ends in',
+  shopOffer: 'Shop Now',
+  noOffers: 'No active offers right now',
+  offersPage: 'Offers & Sales',
+  viewOffers: 'View Offers',
+
   // Checkout
   checkout: 'Checkout',
   customerDetails: 'Customer Details',

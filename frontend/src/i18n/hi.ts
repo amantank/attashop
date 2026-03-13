@@ -21,6 +21,16 @@ const hi: Record<TranslationKey, string> = {
   allCategories: 'सभी',
   searchPlaceholder: 'आटा, चावल, दाल खोजें…',
 
+
+    // Offers
+  offers: 'ऑफर्स',
+  flashSale: 'फ्लैश सेल',
+  saleEndsIn: 'सेल समाप्त होगी',
+  shopOffer: 'अभी खरीदें',
+  noOffers: 'अभी कोई ऑफर नहीं',
+  offersPage: 'ऑफर्स और सेल',
+  viewOffers: 'ऑफर देखें',
+
   // Products
   products: 'उत्पाद',
   outOfStock: 'स्टॉक खत्म',
