@@ -129,8 +129,10 @@ bot.onText(/\/update_product (.+)/, async (msg, match) => {
     reply_markup: {
       inline_keyboard: [
         [{ text: 'Name', callback_data: `upd:name:${id}` }, { text: 'Price', callback_data: `upd:price:${id}` }],
-        [{ text: 'Stock', callback_data: `upd:stock:${id}` }, { text: 'Discount', callback_data: `upd:discount:${id}` }],
-        [{ text: 'Description', callback_data: `upd:description:${id}` }, { text: 'Image', callback_data: `upd:image:${id}` }],
+        [{ text: 'Stock', callback_data: `upd:stock:${id}` }, { text: 'MRP', callback_data: `upd:mrp:${id}` }],
+        [{ text: 'Description', callback_data: `upd:description:${id}` }, { text: 'Category', callback_data: `upd:categoryId:${id}` }],
+        [{ text: 'Image', callback_data: `upd:image:${id}` }, { text: 'Brand', callback_data: `upd:brand:${id}` }],
+        [{ text: 'Min Delivery Qty', callback_data: `upd:minHomeDeliveryQuantity:${id}` }, { text: 'Is Active (true/false)', callback_data: `upd:isActive:${id}` }],
       ],
     },
   });
@@ -387,7 +389,14 @@ bot.on('message', async msg => {
   } else if (state.step === 'update_value') {
     const { productId, field } = state.data;
     const payload: Record<string, unknown> = { [field as string]: text };
-    if (field === 'price') payload.price = parseFloat(text);
+    
+    if (['price', 'mrp', 'stock', 'minHomeDeliveryQuantity'].includes(field as string)) {
+      payload[field as string] = parseFloat(text);
+    }
+    if (field === 'isActive') {
+      payload[field as string] = text.toLowerCase() === 'true';
+    }
+
     try {
       await axios.put(`${API}/api/products/${productId}`, payload);
       bot.sendMessage(chatId, `✅ ${field} updated for \`${productId}\`.`, { parse_mode: 'Markdown', ...menu() });

@@ -202,6 +202,13 @@ router.put('/:id', upload.single('image'), async (req: Request, res: Response) =
       product.pricing.basePrice = Number(data.price || data.basePrice || product.pricing.basePrice);
       product.pricing.unit = data.unit || product.pricing.unit;
       product.pricing.mrp = Number(data.mrp !== undefined ? data.mrp : product.pricing.mrp);
+
+      // Automatically recalculate variant prices if basePrice changes
+      if (product.variants && product.variants.length > 0 && !data.variants) {
+        product.variants.forEach(v => {
+          v.price = product.pricing.basePrice * v.weight;
+        });
+      }
     }
 
     if (data.variants) {
