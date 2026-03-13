@@ -26,7 +26,7 @@ export default function App() {
             <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
             <Route path="/orders" element={<OrderHistoryPage />} />
             <Route path="/subscriptions" element={<SubscriptionsPage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
+            {/* <Route path="/admin" element={<AdminDashboardPage />} /> */}
           </Routes>
         </main>
         <Footer />
