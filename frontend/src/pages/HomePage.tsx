@@ -13,6 +13,7 @@ import SearchBar from '../components/SearchBar';
 import { ProductCardSkeleton } from '../components/Loader';
 import OfferBanner from '../components/OfferBanner';
 import toast from 'react-hot-toast';
+import GroceryHome from '../components/GroceryHome';
 
 // Category icons mapping
 const CAT_ICONS: Record<string, string> = {
@@ -64,6 +65,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <GroceryHome/>
       {/* ── Hero Section ─────────────────────────────────── */}
       <section className="hero-bg relative overflow-hidden grain">
         <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 flex flex-col md:flex-row items-center gap-8">
@@ -112,8 +114,7 @@ export default function HomePage() {
           <SearchBar />
         </div>
       </section>
-           <OfferBanner />
-
+     <OfferBanner />
       {/* ── Reorder Banner ───────────────────────────────── */}
       {lastOrder && (
         <section className="max-w-7xl mx-auto px-4 mt-6">

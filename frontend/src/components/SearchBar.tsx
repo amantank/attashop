@@ -49,7 +49,7 @@ export default function SearchBar() {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder={t('searchPlaceholder')}
-          className="input pl-11 pr-10 shadow-sm"
+          className="input pl-11 pr-10 shadow-sm rounded-3xl"
         />
         {query && (
           <button onClick={() => { setQuery(''); setResults([]); }}
@@ -59,7 +59,7 @@ export default function SearchBar() {
         )}
       </div>
 
-      {(results.length > 0 || loading) && (
+      {(results.length > 0 || loading ) && (
         <div className="absolute top-full mt-2 left-0 right-0 bg-white rounded-2xl shadow-2xl border border-stone-100 z-50 overflow-hidden animate-fade-in-up">
           {loading && (
             <div className="p-4 text-center text-sm text-stone-400">Searching…</div>
