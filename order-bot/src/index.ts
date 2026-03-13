@@ -45,7 +45,7 @@ app.listen(5001, () => console.log('Order bot webhook server on :5001'));
 
 // ── Bot commands ───────────────────────────────────────────
 bot.onText(/\/start/, msg => {
-  bot.sendMessage(msg.chat.id, `🔔 *AtlaShop Order Bot*\n\nThis bot will notify you of all new orders.\n\nCommands:\n/orders – List recent orders\n/order \\<id\\> – Get order details`, { parse_mode: 'Markdown' });
+  bot.sendMessage(msg.chat.id, `🔔 *AtlaShop Order Bot*\n\nThis bot will notify you of all new orders.\n\nCommands:\n/orders \n/confirm [order_id] \n/delivered [order_id]– List recent orders\n/order [order_id] \\<id\\> – Get order details`, { parse_mode: 'Markdown' });
 });
 
 bot.onText(/\/orders/, async msg => {
@@ -65,19 +65,31 @@ bot.onText(/\/order (.+)/, async (msg, match) => {
     const { data } = await axios.get(`${API}/api/orders/${orderId}`);
     const o = data.order;
     const products = o.products.map((p: Record<string, unknown>) =>
-      `  • ${p.productName} ×${p.quantity} – ₹${p.totalPrice}`).join('\n');
+      `  • ${p.productName} ×${p.quantity} — ₹${p.totalPrice}`).join('\n');
+
+    // Build location line
+    let locationLine = '';
+    if (o.lat && o.lng) {
+      locationLine = `\n🗺️ GPS: ${o.lat.toFixed(6)}, ${o.lng.toFixed(6)}\n📌 Maps: https://www.google.com/maps?q=${o.lat},${o.lng}`;
+    }
+
     bot.sendMessage(msg.chat.id, [
       `📦 *Order: ${o.orderId}*`,
       `👤 ${o.customerName} | 📞 ${o.phoneNumber}`,
-      `📍 ${o.address}, ${o.pincode}`,
+      `📍 ${o.address}, ${o.pincode}${o.landmark ? ` (${o.landmark})` : ''}${locationLine}`,
       `📅 ${o.deliveryDate} | ⏰ ${o.deliverySlot}`,
       ``,
       `*Products:*\n${products}`,
       ``,
       `💰 Total: ₹${o.finalAmount} | 🚚 Delivery: ₹${o.deliveryCharge}`,
-      `💳 ${o.paymentMethod.toUpperCase()} – ${o.paymentStatus.toUpperCase()}`,
+      `💳 ${o.paymentMethod.toUpperCase()} — ${o.paymentStatus.toUpperCase()}`,
       `📊 Status: *${o.orderStatus}*`,
     ].join('\n'), { parse_mode: 'Markdown' });
+
+    // Send location pin if available
+    if (o.lat && o.lng) {
+      bot.sendLocation(msg.chat.id, o.lat, o.lng);
+    }
   } catch { bot.sendMessage(msg.chat.id, '❌ Order not found.'); }
 });
 

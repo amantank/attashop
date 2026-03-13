@@ -28,6 +28,7 @@ router.post('/', async (req: Request, res: Response) => {
   try {
     const {
       customerName, phoneNumber, address, pincode, landmark,
+      lat, lng,
       products: rawProducts, paymentMethod, deliveryDate, deliverySlot,
     } = req.body;
 
@@ -105,6 +106,8 @@ router.post('/', async (req: Request, res: Response) => {
     const order = new Order({
       orderId,
       customerName, phoneNumber, address, pincode, landmark,
+      lat: lat || undefined,
+      lng: lng || undefined,
       products: enrichedProducts,
       totalPrice,
       deliveryCharge,

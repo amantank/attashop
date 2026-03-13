@@ -8,6 +8,8 @@ interface CustomerInfo {
   address: string;
   pincode: string;
   landmark: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface CartState {

@@ -1,3 +1,5 @@
+﻿
+========== frontend/src/api/orders.ts ==========
 import client from './client';
 import type { Order, CartItem, PaymentMethod } from '../types';
 
@@ -7,8 +9,6 @@ export interface PlaceOrderPayload {
   address: string;
   pincode: string;
   landmark?: string;
-  lat?: number;      // ← ADD
-  lng?: number;      // ← ADD
   products: { productId: string; variantId?: string; quantity: number }[];
   paymentMethod: PaymentMethod;
   deliveryDate: string;
@@ -39,3 +39,4 @@ export const buildRepeatCartItems = (order: Order): CartItem[] =>
     unitPrice: p.unitPrice,
     categoryId: '',
   }));
+

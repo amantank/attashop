@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/cartStore';
 import { useLanguage } from '../context/LanguageContext';
 import { placeOrder } from '../api/orders';
-import { getSlotAvailability, calculateDeliveryCharge } from '../api/delivery';
+import { getSlotAvailability, calculateDeliveryCharge, getDeliveryAreas } from '../api/delivery';
 import { createSubscription } from '../api/subscriptions';
+import DeliveryMap from '../components/DeliveryMap';
+import type { LocationData } from '../components/DeliveryMap';
 import type { PaymentMethod, DeliverySlot, SubscriptionFrequency } from '../types';
 import toast from 'react-hot-toast';
 
@@ -19,7 +21,7 @@ export default function CheckoutPage() {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const {
-    items, itemCount, subtotal, total, deliveryCharge,
+    items, subtotal, total, deliveryCharge,
     customerInfo, deliveryDate, deliverySlot, paymentMethod,
     subscribeItems, subFrequency, subCustomDays,
     setCustomerInfo, setDeliveryDate, setDeliverySlot,
@@ -30,9 +32,18 @@ export default function CheckoutPage() {
   const [slots, setSlots] = useState<DeliverySlot[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [deliveryAreaPincodes, setDeliveryAreaPincodes] = useState<string[]>([]);
+  const [mapPincode, setMapPincode] = useState('');
   const sub = subtotal();
 
-  // Redirect if cart empty - but only if we are not actively placing an order
+  // Load delivery area pincodes on mount
+  useEffect(() => {
+    getDeliveryAreas()
+      .then(({ areas }) => setDeliveryAreaPincodes(areas.map(a => a.pincode)))
+      .catch(() => setDeliveryAreaPincodes([]));
+  }, []);
+
+  // Redirect if cart empty
   useEffect(() => {
     if (items.length === 0 && !placing) navigate('/cart');
   }, [items.length, navigate, placing]);
@@ -59,13 +70,41 @@ export default function CheckoutPage() {
     }
   }, [customerInfo.pincode, sub, setDeliveryCharge]);
 
+  // Map location callback — auto-fill address fields
+  const handleLocationSelect = (data: LocationData) => {
+    setMapPincode(data.pincode);
+    setCustomerInfo({
+      address: data.address,
+      pincode: data.pincode,
+      landmark: data.landmark,
+      lat: data.lat,
+      lng: data.lng,
+    });
+  };
+
+  // Check if map-selected pincode is deliverable
+  const isPincodeDeliverable =
+    mapPincode && deliveryAreaPincodes.length > 0
+      ? deliveryAreaPincodes.includes(mapPincode)
+      : null;
+
   const validate = (): string | null => {
-    if (!customerInfo.name.trim()) return lang === 'hi' ? 'नाम दर्ज करें' : 'Please enter your name';
-    if (customerInfo.phone.length < 10) return lang === 'hi' ? 'वैध फोन नंबर दर्ज करें' : 'Enter a valid phone number';
-    if (!customerInfo.address.trim()) return lang === 'hi' ? 'पता दर्ज करें' : 'Please enter your address';
-    if (customerInfo.pincode.length !== 6) return lang === 'hi' ? 'वैध पिनकोड दर्ज करें' : 'Enter a valid 6-digit pincode';
-    if (!deliveryDate) return lang === 'hi' ? 'डिलीवरी तारीख चुनें' : 'Select a delivery date';
-    if (!deliverySlot) return lang === 'hi' ? 'डिलीवरी स्लॉट चुनें' : t('selectSlotFirst');
+    if (!customerInfo.name.trim())
+      return lang === 'hi' ? 'नाम दर्ज करें' : 'Please enter your name';
+    if (customerInfo.phone.length < 10)
+      return lang === 'hi' ? 'वैध फोन नंबर दर्ज करें' : 'Enter a valid phone number';
+    if (!customerInfo.address.trim())
+      return lang === 'hi' ? 'पता दर्ज करें' : 'Please enter your address';
+    if (customerInfo.pincode.length !== 6)
+      return lang === 'hi' ? 'वैध पिनकोड दर्ज करें' : 'Enter a valid 6-digit pincode';
+    if (isPincodeDeliverable === false)
+      return lang === 'hi'
+        ? 'इस क्षेत्र में डिलीवरी उपलब्ध नहीं है'
+        : 'Delivery is not available in this area. Please select a different location.';
+    if (!deliveryDate)
+      return lang === 'hi' ? 'डिलीवरी तारीख चुनें' : 'Select a delivery date';
+    if (!deliverySlot)
+      return lang === 'hi' ? 'डिलीवरी स्लॉट चुनें' : t('selectSlotFirst');
     return null;
   };
 
@@ -80,6 +119,8 @@ export default function CheckoutPage() {
         address: customerInfo.address,
         pincode: customerInfo.pincode,
         landmark: customerInfo.landmark || undefined,
+        lat: customerInfo.lat || undefined,
+        lng: customerInfo.lng || undefined,
         products: items.map(i => ({
           productId: i.productId,
           variantId: i.variantId,
@@ -123,31 +164,75 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-extrabold text-stone-900 mb-6">{t('checkout')}</h1>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left – Form */}
+        {/* Left — Form */}
         <div className="lg:col-span-2 space-y-5">
+
+          {/* ★ NEW — Delivery Location Map */}
+          <div className="card p-5">
+            <DeliveryMap
+              onLocationSelect={handleLocationSelect}
+              deliveryAreaPincodes={deliveryAreaPincodes}
+            />
+          </div>
+
           {/* Customer details */}
           <div className="card p-5">
-            <h2 className="font-extrabold text-stone-800 mb-4">{t('customerDetails')}</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-extrabold text-stone-800">{t('customerDetails')}</h2>
+              {mapPincode && (
+                <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                  📍 Auto-filled from map
+                </span>
+              )}
+            </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="label">{t('name')}</label>
-                <input className="input" value={customerInfo.name} onChange={e => setCustomerInfo({ name: e.target.value })} placeholder={lang === 'hi' ? 'राहुल शर्मा' : 'Rahul Sharma'} />
+                <input
+                  className="input"
+                  value={customerInfo.name}
+                  onChange={e => setCustomerInfo({ name: e.target.value })}
+                  placeholder={lang === 'hi' ? 'राहुल शर्मा' : 'Rahul Sharma'}
+                />
               </div>
               <div>
                 <label className="label">{t('phone')}</label>
-                <input className="input" type="tel" maxLength={10} value={customerInfo.phone} onChange={e => setCustomerInfo({ phone: e.target.value.replace(/\D/g, '') })} placeholder="98765 43210" />
+                <input
+                  className="input"
+                  type="tel"
+                  maxLength={10}
+                  value={customerInfo.phone}
+                  onChange={e => setCustomerInfo({ phone: e.target.value.replace(/\D/g, '') })}
+                  placeholder="98765 43210"
+                />
               </div>
               <div className="sm:col-span-2">
                 <label className="label">{t('address')}</label>
-                <textarea className="input resize-none h-20" value={customerInfo.address} onChange={e => setCustomerInfo({ address: e.target.value })} placeholder={lang === 'hi' ? 'मकान नंबर, गली...' : 'House no, Street...'} />
+                <textarea
+                  className="input resize-none h-20"
+                  value={customerInfo.address}
+                  onChange={e => setCustomerInfo({ address: e.target.value })}
+                  placeholder={lang === 'hi' ? 'मकान नंबर, गली...' : 'House no, Street...'}
+                />
               </div>
               <div>
                 <label className="label">{t('pincode')}</label>
-                <input className="input" maxLength={6} value={customerInfo.pincode} onChange={e => setCustomerInfo({ pincode: e.target.value.replace(/\D/g, '') })} placeholder="110001" />
+                <input
+                  className="input"
+                  maxLength={6}
+                  value={customerInfo.pincode}
+                  onChange={e => setCustomerInfo({ pincode: e.target.value.replace(/\D/g, '') })}
+                  placeholder="110001"
+                />
               </div>
               <div>
                 <label className="label">{t('landmark')}</label>
-                <input className="input" value={customerInfo.landmark} onChange={e => setCustomerInfo({ landmark: e.target.value })} placeholder={lang === 'hi' ? 'पास का मंदिर...' : 'Near hospital...'} />
+                <input
+                  className="input"
+                  value={customerInfo.landmark}
+                  onChange={e => setCustomerInfo({ landmark: e.target.value })}
+                  placeholder={lang === 'hi' ? 'पास का मंदिर...' : 'Near hospital...'}
+                />
               </div>
             </div>
           </div>
@@ -157,7 +242,13 @@ export default function CheckoutPage() {
             <h2 className="font-extrabold text-stone-800 mb-4">{t('deliverySchedule')}</h2>
             <div className="mb-4">
               <label className="label">{t('deliveryDate')}</label>
-              <input type="date" className="input max-w-xs" min={minDate} value={deliveryDate} onChange={e => { setDeliveryDate(e.target.value); setDeliverySlot(''); }} />
+              <input
+                type="date"
+                className="input max-w-xs"
+                min={minDate}
+                value={deliveryDate}
+                onChange={e => { setDeliveryDate(e.target.value); setDeliverySlot(''); }}
+              />
             </div>
             {deliveryDate && (
               <div>
@@ -166,9 +257,7 @@ export default function CheckoutPage() {
                   <p className="text-stone-400 text-sm">{t('loading')}</p>
                 ) : slots.length === 0 ? (
                   <div className="grid grid-cols-2 gap-2">
-                    {[
-                      '7AM – 9AM', '9AM – 12PM', '12PM – 3PM', '4PM – 7PM',
-                    ].map(s => (
+                    {['7AM — 9AM', '9AM — 12PM', '12PM — 3PM', '4PM — 7PM'].map(s => (
                       <button
                         key={s}
                         onClick={() => setDeliverySlot(s)}
@@ -214,11 +303,17 @@ export default function CheckoutPage() {
                 <label key={item.productId} className="flex items-center gap-3 cursor-pointer">
                   <div
                     onClick={() => toggleSubscribeItem(item.productId)}
-                    className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${subscribeItems.includes(item.productId) ? 'bg-amber-500' : 'bg-stone-200'}`}
+                    className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${
+                      subscribeItems.includes(item.productId) ? 'bg-amber-500' : 'bg-stone-200'
+                    }`}
                   >
-                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${subscribeItems.includes(item.productId) ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    <div className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${
+                      subscribeItems.includes(item.productId) ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
                   </div>
-                  <span className="text-sm font-semibold text-stone-700">{item.productName} ×{item.quantity}</span>
+                  <span className="text-sm font-semibold text-stone-700">
+                    {item.productName} ×{item.quantity}
+                  </span>
                 </label>
               ))}
             </div>
@@ -229,7 +324,9 @@ export default function CheckoutPage() {
                   {(['weekly','biweekly','monthly','custom'] as SubscriptionFrequency[]).map(f => (
                     <button key={f} onClick={() => setSubFrequency(f)}
                       className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
-                        subFrequency === f ? 'border-amber-500 bg-amber-500 text-white' : 'border-stone-200 bg-white text-stone-600'
+                        subFrequency === f
+                          ? 'border-amber-500 bg-amber-500 text-white'
+                          : 'border-stone-200 bg-white text-stone-600'
                       }`}>
                       {f === 'weekly' ? 'Weekly' : f === 'biweekly' ? 'Every 2 Weeks' : f === 'monthly' ? 'Monthly' : 'Custom'}
                     </button>
@@ -238,8 +335,8 @@ export default function CheckoutPage() {
                 {subFrequency === 'custom' && (
                   <div className="mt-3 bg-stone-50 p-3 rounded-xl border border-stone-200 animate-fade-in flex items-center gap-3">
                     <span className="text-sm text-stone-600 font-medium">Deliver every</span>
-                    <input 
-                      type="number" min="1" max="90" 
+                    <input
+                      type="number" min="1" max="90"
                       className="input w-20 py-1.5 px-3 text-center !text-sm"
                       value={subCustomDays || ''}
                       placeholder="e.g. 8"
@@ -274,7 +371,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Right – Summary */}
+        {/* Right — Summary */}
         <div className="card p-5 h-fit lg:sticky lg:top-24">
           <h2 className="font-extrabold text-stone-900 mb-4">{t('orderSummary')}</h2>
           <div className="space-y-2 mb-4">
@@ -295,7 +392,8 @@ export default function CheckoutPage() {
           <div className="h-px bg-stone-100 mb-3" />
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-stone-600">
-              <span>{t('subtotal')}</span><span className="font-bold">₹{sub.toFixed(0)}</span>
+              <span>{t('subtotal')}</span>
+              <span className="font-bold">₹{sub.toFixed(0)}</span>
             </div>
             <div className="flex justify-between text-stone-600">
               <span>{t('deliveryCharge')}</span>
@@ -316,10 +414,18 @@ export default function CheckoutPage() {
             </div>
           )}
 
+          {/* Delivery location mini-preview in summary */}
+          {customerInfo.lat && customerInfo.lng && (
+            <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-200 text-xs text-blue-700 font-semibold">
+              📍 {customerInfo.address ? customerInfo.address.substring(0, 60) + '...' : 'Location selected'}
+              {customerInfo.pincode && <span className="ml-1 opacity-70">({customerInfo.pincode})</span>}
+            </div>
+          )}
+
           <button
             onClick={handlePlaceOrder}
-            disabled={placing}
-            className="btn-primary w-full mt-5 py-3 text-base flex flex-col items-center justify-center gap-0.5"
+            disabled={placing || isPincodeDeliverable === false}
+            className="btn-primary w-full mt-5 py-3 text-base flex flex-col items-center justify-center gap-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span>{placing ? t('placingOrder') : t('placeOrder')}</span>
             {subscribeItems.length > 0 && !placing && (
@@ -328,6 +434,12 @@ export default function CheckoutPage() {
               </span>
             )}
           </button>
+
+          {isPincodeDeliverable === false && (
+            <p className="text-xs text-red-500 font-bold text-center mt-2">
+              ❌ Delivery unavailable at selected location
+            </p>
+          )}
         </div>
       </div>
     </div>

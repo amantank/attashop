@@ -4,6 +4,11 @@ import type { DeliverySlot, DeliveryCharge, DeliveryArea } from '../types';
 export const getDeliveryAreas = () =>
   client.get<{ success: boolean; areas: DeliveryArea[] }>('/api/delivery/areas').then(r => r.data);
 
+export const checkPincodeAvailability = (pincode: string) =>
+  client
+    .get<{ success: boolean; available: boolean }>(`/api/delivery/areas/check/${pincode}`)
+    .then(r => r.data);
+
 export const getSlotAvailability = (date: string) =>
   client
     .get<{ success: boolean; date: string; slots: DeliverySlot[] }>('/api/orders/slots/availability', {

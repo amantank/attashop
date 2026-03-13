@@ -22,6 +22,8 @@ export interface IOrder extends Document {
   address: string;
   pincode: string;
   landmark?: string;
+  lat?: number;       
+  lng?: number; 
   products: IOrderProduct[];
   totalPrice: number;
   deliveryCharge: number;
@@ -60,6 +62,8 @@ const OrderSchema = new Schema<IOrder>(
     address: { type: String, required: true },
     pincode: { type: String, required: true },
     landmark: { type: String },
+    lat: { type: Number },       
+    lng: { type: Number },
     products: { type: [OrderProductSchema], required: true },
     totalPrice: { type: Number, required: true },
     deliveryCharge: { type: Number, default: 0 },
