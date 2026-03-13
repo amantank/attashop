@@ -1,52 +1,89 @@
-import { Link } from 'react-router-dom';
-import { Wheat, Phone, MapPin, Clock } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext';
+import { Link } from "react-router-dom";
+import { Wheat, Phone, MapPin, Clock } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
+import { useEffect, useState } from "react";
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const heroTexts =
+    lang === "hi"
+      ? ["शुद्ध गेहूं का आटा", "ताजा बासमती चावल", "पौष्टिक मसूर दाल"]
+      : ["Pure Wheat Flour", "Fresh Basmati Rice", "Nutritious Masoor Dal"];
+  const [heroIdx, setHeroIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(
+      () => setHeroIdx((i) => (i + 1) % heroTexts.length),
+      2500,
+    );
+    return () => clearInterval(timer);
+  }, [heroTexts.length]);
   return (
-    <footer className="bg-stone-900 text-stone-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-3 gap-8">
-        {/* Brand */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
-              <Wheat size={16} className="text-white" />
-            </div>
-            <span className="text-white font-bold text-lg">{t('appName')}</span>
+    <footer className="bg-white border-t border-stone-200 mt-10">
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-sm text-stone-500">
+          {/* Brand */}
+          <div className="flex flex-col">
+            <span className="font-semibold text-stone-900">
+              {"The " + t("appName")}
+            </span>
+            <span
+              key={heroIdx}
+              className="text-xs text-stone-400 animate-fade-in-up"
+            >
+              {" "}
+              {heroTexts[heroIdx]}
+            </span>
           </div>
-          <p className="text-sm text-stone-400 leading-relaxed">{t('tagline')}</p>
-        </div>
 
-        {/* Quick links */}
-        <div>
-          <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">Quick Links</h3>
-          <ul className="space-y-2 text-sm">
+          {/* Navigation */}
+          <div className="flex flex-wrap items-center gap-6">
             {[
-              { to: '/products', label: t('products') },
-              { to: '/orders', label: t('myOrders') },
-              { to: '/subscriptions', label: t('subscriptions') },
-              { to: '/admin', label: t('admin') },
-            ].map(l => (
-              <li key={l.to}>
-                <Link to={l.to} className="hover:text-amber-400 transition-colors">{l.label}</Link>
-              </li>
+              { to: "/products", label: t("products") },
+              { to: "/orders", label: t("myOrders") },
+              { to: "/offers", label: t("offers") },
+              { to: "/subscriptions", label: t("subscriptions") },
+            ].map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="hover:text-green-600 transition"
+              >
+                {l.label}
+              </Link>
             ))}
-          </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="flex flex-wrap items-center gap-6">
+            <span className="flex items-center gap-1">
+              <Phone size={14} className="text-green-600" />
+              +91 98765 43210
+            </span>
+
+            <span className="flex items-center gap-1">
+              <MapPin size={14} className="text-green-600" />
+              {lang === "hi" ? "स्थानीय क्षेत्र" : "Local Area"}
+            </span>
+
+            <span className="flex items-center gap-1">
+              <Clock size={14} className="text-green-600" />7 AM – 7 PM
+            </span>
+          </div>
         </div>
 
-        {/* Contact */}
-        <div>
-          <h3 className="text-white font-semibold mb-3 text-sm uppercase tracking-wide">Contact</h3>
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2"><Phone size={14} className="text-amber-400" /> +91 98765 43210</li>
-            <li className="flex items-center gap-2"><MapPin size={14} className="text-amber-400" /> Local Delivery Area</li>
-            <li className="flex items-center gap-2"><Clock size={14} className="text-amber-400" /> 7 AM – 7 PM</li>
-          </ul>
+        {/* Bottom bar */}
+        <div className="mt-8 pt-6 border-t border-stone-200 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-stone-400">
+          <p>
+            © {new Date().getFullYear()} {t("appName")} —
+            {lang === "hi" ? " ताज़ा आटा हर दिन" : " Fresh Flour, Every Day"}
+          </p>
+
+          <div className="flex gap-4">
+            <span className="hover:text-stone-600 cursor-pointer">Privacy</span>
+            <span className="hover:text-stone-600 cursor-pointer">Terms</span>
+          </div>
         </div>
-      </div>
-      <div className="border-t border-stone-800 py-4 text-center text-xs text-stone-500">
-        © {new Date().getFullYear()} {t('appName')} – Fresh Flour, Every Day
       </div>
     </footer>
   );

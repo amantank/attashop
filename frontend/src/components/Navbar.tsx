@@ -13,7 +13,7 @@ export default function Navbar() {
 
   const navLinks = [
     { to: "/products", label: t("products") },
-    { to: "/offers", label: "🔥 " + t("offers") },
+    { to: "/offers", label: t("offers") },
     { to: "/orders", label: t("orders") },
     { to: "/subscriptions", label: t("subscriptions") },
   ];
@@ -93,9 +93,12 @@ export default function Navbar() {
             <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-stone-900 tracking-tight">
-                  Menu
+                  {lang === "hi" ? "मेनू" : "Menu"}
                 </h2>
-                <p className="text-xs text-stone-400">Navigation</p>
+
+                <p className="text-xs text-stone-400">
+                  {lang === "hi" ? "नेविगेशन" : "Navigation"}
+                </p>
               </div>
 
               <button

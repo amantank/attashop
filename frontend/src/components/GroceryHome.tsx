@@ -3,9 +3,21 @@ import SearchBar from "./SearchBar";
 import { useLanguage } from "../context/LanguageContext";
 import Navbar from "./Navbar";
 import { Link } from "react-router-dom";
-import { CookingPot, Leaf, Wheat } from "lucide-react";
+import {
+  Apple,
+  CookingPot,
+  CreditCard,
+  Leaf,
+  Milk,
+  Package,
+  Repeat,
+  Sandwich,
+  Truck,
+  Wheat,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "../api/categories";
+import Footer from "./Footer";
 
 const banners = [
   {
@@ -32,6 +44,15 @@ const defaultCategories = [
   { name: "Whole Wheat Flour", nameHi: "आटा", icon: Wheat },
   { name: "Gram Flour", nameHi: "बेसन", icon: CookingPot },
 ];
+
+const CAT_ICONS: any = {
+  vegetables: Leaf,
+  fruits: Apple,
+  dairy: Milk,
+  bakery: Sandwich,
+
+  default: Package,
+};
 
 export default function GroceryHome() {
   const { t, lang, toggleLang } = useLanguage();
@@ -70,6 +91,24 @@ export default function GroceryHome() {
             </div>
 
             <div className="flex flex-wrap gap-4 mt-5">
+              {/* Categories from database */}
+              {categoriesData?.categories?.map((cat: any) => {
+                const Icon = CAT_ICONS[cat.name] || CAT_ICONS.Default;
+
+                return (
+                  <Link
+                    key={cat.categoryId}
+                    to={`/products?category=${cat.categoryId}`}
+                  >
+                    <Category
+                      name={lang === "hi" && cat.nameHi ? cat.nameHi : cat.name}
+                      icon={Icon}
+                    />
+                  </Link>
+                );
+              })}
+
+              {/* Fallback static categories */}
               {defaultCategories
                 .filter(
                   (cat) =>
@@ -99,11 +138,57 @@ export default function GroceryHome() {
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
               <Product />
-              <Product />
-              <Product />
-              <Product />
             </div>
           </div>
+          <section className="py-10">
+            <div className="max-w-2xl mx-auto px-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 ">
+                {[
+                  {
+                    icon: Wheat,
+                    title: lang === "hi" ? "ताज़ा आटा" : "Fresh Atta",
+                    sub: lang === "hi" ? "ऑर्डर पर पिसा" : "Ground on Order",
+                  },
+                  {
+                    icon: Truck,
+                    title: lang === "hi" ? "घर डिलीवरी" : "Home Delivery",
+                    sub: lang === "hi" ? "सीधे आपके घर" : "Straight to Door",
+                  },
+                  {
+                    icon: Repeat,
+                    title: lang === "hi" ? "सब्सक्रिप्शन" : "Subscription",
+                    sub:
+                      lang === "hi" ? "साप्ताहिक • मासिक" : "Weekly • Monthly",
+                  },
+                  {
+                    icon: CreditCard,
+                    title: lang === "hi" ? "आसान भुगतान" : "Easy Pay",
+                    sub: "UPI • GPay • COD",
+                  },
+                ].map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <div
+                      key={item.title}
+                      className="bg-white rounded-2xl p-4 flex flex-col items-center text-center"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center mb-2">
+                        <Icon size={20} className="text-green-600" />
+                      </div>
+
+                      <p className="font-semibold text-sm text-stone-800">
+                        {item.title}
+                      </p>
+
+                      <p className="text-xs text-stone-400 mt-1">{item.sub}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+          <Footer />
         </div>
 
         {/* Right Sidebar */}
@@ -119,6 +204,7 @@ export default function GroceryHome() {
           </div>
         </div>
       </div>
+      {/* ── Benefits strip ────────────────────────────────── */}
     </div>
   );
 }
@@ -183,7 +269,7 @@ export function BannerCarousel() {
       onMouseLeave={() => setPaused(false)}
     >
       {/* Desktop stacked cards */}
-      <div className="hidden lg:block relative h-72 overflow-visible mt-2">
+      <div className="relative h-60 lg:h-72 overflow-visible mt-2 mb-2">
         {banners.map((b, i) => {
           const offset = (i - index + banners.length) % banners.length;
 
@@ -194,14 +280,9 @@ export function BannerCarousel() {
                 offset === 0
                   ? "z-30 opacity-100 translate-x-0 scale-100"
                   : offset === 1
-                    ? "z-20 opacity-80 translate-x-[40px] scale-95"
-                    : "z-10 opacity-60 translate-x-[80px] scale-90"
+                    ? "z-20 opacity-80 translate-x-[20px] lg:translate-x-[40px] scale-95"
+                    : "z-10 opacity-60 translate-x-[40px] lg:translate-x-[80px] scale-90"
               }`}
-              style={{
-                transform: `translate3d(${offset * 40}px,0,0) scale(${
-                  offset === 0 ? 1 : offset === 1 ? 0.95 : 0.9
-                })`,
-              }}
             >
               <BannerCard banner={b} />
             </div>
@@ -209,13 +290,8 @@ export function BannerCarousel() {
         })}
       </div>
 
-      {/* Mobile version (unchanged) */}
-      <div className="lg:hidden">
-        <BannerCard banner={banners[index]} />
-      </div>
-
       {/* Controls */}
-      <div className="flex justify-center gap-2 mt-4">
+      <div className="flex justify-center gap-2 mt-8 md:mt-0">
         {banners.map((_, i) => (
           <button
             key={i}

@@ -35,7 +35,6 @@ export default function App() {
             {/* <Route path="/admin" element={<AdminDashboardPage />} /> */}
           </Routes>
         </main>
-        <Footer />
       </div>
     </BrowserRouter>
   );
