@@ -4,6 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import Product, { IProductVariant, IProduct } from '../models/Product';
+import Category from '../models/Category';
 // Using a basic slugify function
 const slugify = (text: string) => text.toString().toLowerCase()
   .replace(/\s+/g, '-')
@@ -36,10 +37,22 @@ router.get('/', async (req: Request, res: Response) => {
 
     if (search) {
       const searchRegex = new RegExp(String(search).trim(), 'i');
+
+      // Find categories whose name matches the search term
+      const matchingCategories = await Category.find({
+        $or: [{ name: searchRegex }, { nameHi: searchRegex }],
+        isActive: true,
+      }).select('categoryId name');
+
+      const matchingCategoryIds = matchingCategories.map(c => c.categoryId);
+      // Also match the raw search text as a categoryId (for fallback categories like "Atta", "Rice")
+      matchingCategoryIds.push(String(search).trim());
+
       query.$or = [
         { name: searchRegex },
         { description: searchRegex },
         { tags: searchRegex },
+        { categoryId: { $in: matchingCategoryIds } },
       ];
     }
     if (categoryId) query.categoryId = categoryId;
