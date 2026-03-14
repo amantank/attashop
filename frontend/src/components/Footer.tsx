@@ -19,7 +19,7 @@ export default function Footer() {
     return () => clearInterval(timer);
   }, [heroTexts.length]);
   return (
-    <footer className="bg-white border-t border-stone-200 mt-10">
+    <footer className="bg-white border-t border-stone-200 mt-10 md:mb-[-3em]">
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-sm text-stone-500">
           {/* Brand */}

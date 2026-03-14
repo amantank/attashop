@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Menu, X, Globe, Wheat } from "lucide-react";
+import { ShoppingCart, Menu, X, Globe, Wheat, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useCartStore } from "../store/cartStore";
 import { useLanguage } from "../context/LanguageContext";
@@ -53,6 +53,7 @@ export default function Navbar() {
               </span>
             )}
           </button>
+
           {/* Right Sidebar (Desktop only) */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}

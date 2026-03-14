@@ -2,14 +2,16 @@ import React, { useEffect, useState } from "react";
 import SearchBar from "./SearchBar";
 import { useLanguage } from "../context/LanguageContext";
 import Navbar from "./Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Apple,
+  ChevronRight,
   CookingPot,
   CreditCard,
   Leaf,
   Milk,
   Package,
+  RefreshCw,
   Repeat,
   Sandwich,
   Truck,
@@ -18,6 +20,13 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "../api/categories";
 import Footer from "./Footer";
+import { getProducts } from "../api/products";
+import { ProductCardSkeleton } from "./Loader";
+import ProductCard from "./ProductCard";
+import OfferBanner from "./OfferBanner";
+import { buildRepeatCartItems, getOrdersByPhone } from "../api/orders";
+import { useCartStore } from "../store/cartStore";
+import toast from "react-hot-toast";
 
 const banners = [
   {
@@ -56,10 +65,35 @@ const CAT_ICONS: any = {
 
 export default function GroceryHome() {
   const { t, lang, toggleLang } = useLanguage();
+  const repeatOrder = useCartStore((s) => s.repeatOrder);
+  const navigate = useNavigate();
+
+  const customerPhone = useCartStore((s) => s.customerInfo.phone);
   const { data: categoriesData } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+
+  const { data: productsData, isLoading: productsLoading } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: () => getProducts({ featured: true, limit: 8 }),
+  });
+
+  const { data: lastOrderData } = useQuery({
+    queryKey: ["last-order", customerPhone],
+    queryFn: () => getOrdersByPhone(customerPhone),
+    enabled: !!customerPhone,
+  });
+
+  const lastOrder = lastOrderData?.orders?.[0];
+
+  const handleRepeatLastOrder = () => {
+    if (!lastOrder) return;
+    const items = buildRepeatCartItems(lastOrder);
+    repeatOrder(items);
+    toast.success(t("repeatSuccess"));
+    navigate("/cart");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center  ">
@@ -75,6 +109,32 @@ export default function GroceryHome() {
           </div>
 
           <BannerCarousel />
+          {lastOrder && (
+            <section className="max-w-7xl mx-auto px-4 mt-6">
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 flex items-center justify-between gap-4 shadow-lg animate-fade-in-up">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <RefreshCw size={20} className="text-white" />
+                  </div>
+                  <div className="text-white">
+                    <p className="font-bold text-sm">
+                      {t("reorderLastPurchase")}
+                    </p>
+                    <p className="text-xs text-amber-100">
+                      {lastOrder.products.length} items · ₹
+                      {lastOrder.finalAmount}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRepeatLastOrder}
+                  className="bg-white text-amber-600 font-bold text-sm px-4 py-2 rounded-xl hover:shadow-md transition shrink-0"
+                >
+                  {t("reorderBtn")}
+                </button>
+              </div>
+            </section>
+          )}
 
           {/* Categories */}
           <div className="mt-10">
@@ -131,7 +191,33 @@ export default function GroceryHome() {
                 })}
             </div>
           </div>
-
+          {/* ── Featured Products ─────────────────────────────── */}
+          {!productsLoading && productsData?.products?.length ? (
+            <section className="mt-10">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-semibold text-lg">
+                  {t("featuredProducts")}
+                </h2>
+                <Link
+                  to="/products"
+                  className="text-amber-600 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all"
+                >
+                  {lang === "hi" ? "सभी देखें" : "See All"}{" "}
+                  <ChevronRight size={16} />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {productsLoading
+                  ? Array.from({ length: 8 }).map((_, i) => (
+                      <ProductCardSkeleton key={i} />
+                    ))
+                  : productsData?.products?.map((p) => (
+                      <ProductCard key={p.productId} product={p} />
+                    ))}
+              </div>
+            </section>
+          ) : null}
+          <OfferBanner />
           {/* Products */}
           <div className="mt-10">
             <h3 className="font-semibold text-lg">Popular Products</h3>
@@ -188,6 +274,7 @@ export default function GroceryHome() {
               </div>
             </div>
           </section>
+
           <Footer />
         </div>
 
@@ -221,17 +308,13 @@ function Category({ name, icon: Icon }: any) {
 function Product() {
   return (
     <div className="bg-lime-100 rounded-2xl p-4 hover:shadow-md transition">
-      <img
+      {/* <img
         src="https://images.unsplash.com/photo-1587049352851-8d4e89133924"
         className="w-full h-28 object-contain"
-      />
+      /> */}
 
       <h4 className="font-medium text-sm mt-3">Coconut Clarity</h4>
       <p className="text-xs text-gray-500">13.5 oz can</p>
-
-      <div className="flex items-center gap-1 mt-2 text-sm">
-        ⭐ <span>4.8</span>
-      </div>
     </div>
   );
 }
