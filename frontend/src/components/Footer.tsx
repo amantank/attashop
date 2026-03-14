@@ -36,8 +36,30 @@ export default function Footer() {
             </span>
           </div>
 
-          {/* Navigation */}
-          <div className="flex flex-wrap items-center gap-6">
+          {/* Contact */}
+          <div className="flex flex-wrap items-center md:gap-4 gap-2">
+            <span className="flex items-center text-xs  gap-1">
+              <Phone size={14} className="text-green-600" />
+              +91 98765 43210
+            </span>
+
+            <span className="flex items-center gap-1 text-xs">
+              <MapPin size={14} className="text-green-600" />
+              {lang === "hi"
+                ? "स्थानीय क्षेत्र - Udaipur (Rajasthan) 313001"
+                : "Udaipur (Rajasthan) 313001"}
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="mt-0 pt-2 border-t-none border-stone-200 flex flex-col md:flex-row items-center justify-between md:gap-3 gap-2 text-xs text-stone-400">
+          <p>
+            © {new Date().getFullYear()} {t("appName")} —
+            {lang === "hi" ? " ताज़ा आटा हर दिन" : " Fresh Flour, Every Day"}
+          </p>
+
+          <div className="flex flex-wrap md:gap-4 gap-2">
             {[
               { to: "/products", label: t("products") },
               { to: "/orders", label: t("myOrders") },
@@ -47,39 +69,11 @@ export default function Footer() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="hover:text-green-600 transition"
+                className="hover:text-green-600 transition text-xs"
               >
                 {l.label}
               </Link>
             ))}
-          </div>
-
-          {/* Contact */}
-          <div className="flex flex-wrap items-center gap-6">
-            <span className="flex items-center gap-1">
-              <Phone size={14} className="text-green-600" />
-              +91 98765 43210
-            </span>
-
-            <span className="flex items-center gap-1">
-              <MapPin size={14} className="text-green-600" />
-              {lang === "hi" ? "स्थानीय क्षेत्र" : "Local Area"}
-            </span>
-
-            <span className="flex items-center gap-1">
-              <Clock size={14} className="text-green-600" />7 AM – 7 PM
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="mt-8 pt-6 border-t border-stone-200 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-stone-400">
-          <p>
-            © {new Date().getFullYear()} {t("appName")} —
-            {lang === "hi" ? " ताज़ा आटा हर दिन" : " Fresh Flour, Every Day"}
-          </p>
-
-          <div className="flex gap-4">
             <span className="hover:text-stone-600 cursor-pointer">Privacy</span>
             <span className="hover:text-stone-600 cursor-pointer">Terms</span>
           </div>
