@@ -46,7 +46,7 @@ export default function ProductsPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto w-full px-4 py-6 border h-screen h-full border-b-[0px] border-t-[0px] ">
+    <div className="max-w-7xl mx-auto w-full px-4 py-6 border h-full border-b-[0px] border-t-[0px] ">
       {/* Header */}
       <div className="flex md:hidden flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-lg font-semibold text-stone-900">
@@ -91,7 +91,7 @@ export default function ProductsPage() {
 
       {/* Products grid */}
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid h-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
