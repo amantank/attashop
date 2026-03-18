@@ -356,7 +356,7 @@ function assignSpans(
 
 /* ─── Main Banner Component ──────────────────────────────────── */
 export default function OfferBanner() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const offers = useActiveOffers();
   const bannerOffers = offers.filter(
     (o) =>
@@ -371,12 +371,14 @@ export default function OfferBanner() {
 
   return (
     <section className="max-w-7xl mx-auto  mt-6">
+      <h3 className="font-semibold text-lg">{t("offers")}</h3>
       <div
         className="
         grid gap-2.5
         grid-cols-2
         sm:grid-cols-3
         lg:grid-cols-4
+        mt-5
       "
       >
         {cells.map(({ offer, cols, rows }) => (

@@ -96,15 +96,15 @@ export default function GroceryHome() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center  ">
+    <div className="min-h-screen bg-white flex justify-center  ">
       {/* App Container */}
-      <div className="w-full max-w-7xl bg-white border border-gray-200 border-[1px] shadow-3xl flex overflow-hidden">
+      <div className="w-full max-w-7xl bg-white border border-gray-200 border-[1px] shadow-3xl border-b-[0px] border-t-[0px] flex overflow-hidden">
         {/* Left Side (Main Content) */}
         <div className="flex-1 p-6 lg:p-10">
           {/* Header */}
-          <Navbar />
+
           {/* Mobile Search */}
-          <div className="md:hidden mt-4 flex gap-3">
+          <div className="md:hidden  flex gap-3">
             <SearchBar />
           </div>
 
@@ -218,64 +218,6 @@ export default function GroceryHome() {
             </section>
           ) : null}
           <OfferBanner />
-          {/* Products */}
-          <div className="mt-10">
-            <h3 className="font-semibold text-lg">Popular Products</h3>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
-              <Product />
-            </div>
-          </div>
-          <section className="py-10">
-            <div className="max-w-2xl mx-auto px-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 ">
-                {[
-                  {
-                    icon: Wheat,
-                    title: lang === "hi" ? "ताज़ा आटा" : "Fresh Atta",
-                    sub: lang === "hi" ? "ऑर्डर पर पिसा" : "Ground on Order",
-                  },
-                  {
-                    icon: Truck,
-                    title: lang === "hi" ? "घर डिलीवरी" : "Home Delivery",
-                    sub: lang === "hi" ? "सीधे आपके घर" : "Straight to Door",
-                  },
-                  {
-                    icon: Repeat,
-                    title: lang === "hi" ? "सब्सक्रिप्शन" : "Subscription",
-                    sub:
-                      lang === "hi" ? "साप्ताहिक • मासिक" : "Weekly • Monthly",
-                  },
-                  {
-                    icon: CreditCard,
-                    title: lang === "hi" ? "आसान भुगतान" : "Easy Pay",
-                    sub: "UPI • GPay • COD",
-                  },
-                ].map((item) => {
-                  const Icon = item.icon;
-
-                  return (
-                    <div
-                      key={item.title}
-                      className="bg-white rounded-2xl p-4 flex flex-col items-center text-center"
-                    >
-                      <div className="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center mb-2">
-                        <Icon size={20} className="text-green-600" />
-                      </div>
-
-                      <p className="font-semibold text-sm text-stone-800">
-                        {item.title}
-                      </p>
-
-                      <p className="text-xs text-stone-400 mt-1">{item.sub}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          <Footer />
         </div>
 
         {/* Right Sidebar */}
@@ -301,20 +243,6 @@ function Category({ name, icon: Icon }: any) {
     <div className="flex items-center gap-3 bg-gray-100 px-5 py-3 rounded-xl text-sm hover:bg-gray-200 cursor-pointer transition">
       <Icon size={18} className="text-green-600" />
       <span className="font-medium text-stone-700">{name}</span>
-    </div>
-  );
-}
-
-function Product() {
-  return (
-    <div className="bg-lime-100 rounded-2xl p-4 hover:shadow-md transition">
-      {/* <img
-        src="https://images.unsplash.com/photo-1587049352851-8d4e89133924"
-        className="w-full h-28 object-contain"
-      /> */}
-
-      <h4 className="font-medium text-sm mt-3">Coconut Clarity</h4>
-      <p className="text-xs text-gray-500">13.5 oz can</p>
     </div>
   );
 }

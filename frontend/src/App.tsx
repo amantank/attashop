@@ -10,11 +10,13 @@ import OrderHistoryPage from "./pages/OrderHistoryPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import OffersPage from "./pages/OffersPage";
+import Navbar from "./components/Navbar";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen flex flex-col bg-surface">
+      <div className="min-h-screen flex flex-col bg-white">
+        <Navbar />
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -35,6 +37,7 @@ export default function App() {
             {/* <Route path="/admin" element={<AdminDashboardPage />} /> */}
           </Routes>
         </main>
+        <Footer />
       </div>
     </BrowserRouter>
   );
