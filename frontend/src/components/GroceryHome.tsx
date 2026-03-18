@@ -27,6 +27,7 @@ import OfferBanner from "./OfferBanner";
 import { buildRepeatCartItems, getOrdersByPhone } from "../api/orders";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
+import ProductsPage from "../pages/ProductsPage";
 
 const banners = [
   {
@@ -98,7 +99,7 @@ export default function GroceryHome() {
   return (
     <div className="min-h-screen bg-white flex justify-center  ">
       {/* App Container */}
-      <div className="w-full max-w-7xl bg-white border border-gray-200 border-[1px] shadow-3xl border-b-[0px] border-t-[0px] flex overflow-hidden">
+      <div className="w-full max-w-7xl bg-white border border-gray-200 border-[1px] shadow-3xl border-b-[0px] border-t-[0px] flex flex-col overflow-hidden">
         {/* Left Side (Main Content) */}
         <div className="flex-1 p-6 lg:p-10">
           {/* Header */}
@@ -111,24 +112,45 @@ export default function GroceryHome() {
           <BannerCarousel />
           {lastOrder && (
             <section className="max-w-7xl mx-auto px-4 mt-6">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 flex items-center justify-between gap-4 shadow-lg animate-fade-in-up">
+              <div
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 
+                  bg-[#F7FAF7] border border-[#E6F4EA] 
+                  rounded-2xl p-4 sm:p-5 
+                  shadow-sm transition-all"
+              >
+                {/* LEFT CONTENT */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                    <RefreshCw size={20} className="text-white" />
+                  <div
+                    className="w-10 h-10 flex items-center justify-center 
+                      bg-[#E8F5E9] rounded-xl"
+                  >
+                    <RefreshCw size={18} className="text-[#2E7D32]" />
                   </div>
-                  <div className="text-white">
-                    <p className="font-bold text-sm">
+
+                  <div>
+                    <p className="font-semibold text-sm text-gray-800">
                       {t("reorderLastPurchase")}
                     </p>
-                    <p className="text-xs text-amber-100">
+                    <p className="text-xs text-gray-500 mt-0.5">
                       {lastOrder.products.length} items · ₹
                       {lastOrder.finalAmount}
                     </p>
                   </div>
                 </div>
+
+                {/* BUTTON */}
                 <button
                   onClick={handleRepeatLastOrder}
-                  className="bg-white text-amber-600 font-bold text-sm px-4 py-2 rounded-xl hover:shadow-md transition shrink-0"
+                  className="
+                  w-full sm:w-auto
+                  bg-[#E8F5E9] text-[#2E7D32]
+                  font-semibold text-sm
+                  px-4 py-2
+                  rounded-xl
+                  hover:bg-[#DFF3E3]
+                  transition-all
+                  active:scale-[0.98]
+                "
                 >
                   {t("reorderBtn")}
                 </button>
@@ -219,11 +241,7 @@ export default function GroceryHome() {
           ) : null}
           <OfferBanner />
         </div>
-
-        {/* Right Sidebar */}
-        {/* Desktop Sidebar Overlay */}
-
-        {/* Mobile Bottom Navigation */}
+        <ProductsPage />
       </div>
       {/* ── Benefits strip ────────────────────────────────── */}
     </div>
