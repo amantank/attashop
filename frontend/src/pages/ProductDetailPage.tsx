@@ -159,37 +159,43 @@ export default function ProductDetailPage() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* ─── Offer Banner (above product) ───────────────────── */}
       {hasOffer && (
-        <div className="mb-6 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 rounded-2xl p-4 md:p-5 text-white relative overflow-hidden animate-fade-in-up">
-          {/* Decorative */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-1/4 w-16 h-16 bg-white/5 rounded-full translate-y-1/2" />
-
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center offer-icon-pulse">
-                <Flame size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider opacity-80">
-                  {offer!.type === "flash_sale"
-                    ? "⚡ Flash Sale"
-                    : offer!.type === "category_sale"
-                      ? "🏷️ Category Sale"
-                      : "🎉 Special Offer"}
-                </p>
-                <p className="font-extrabold text-lg leading-tight">
-                  {lang === "hi" && offer!.titleHi
-                    ? offer!.titleHi
-                    : offer!.title}
-                </p>
-              </div>
+        <div
+          className="mb-4 flex items-center justify-between gap-3 
+    bg-orange-50 border border-orange-200 
+    rounded-xl px-3 py-2 shadow-sm"
+        >
+          {/* Left */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">
+              <Flame size={14} />
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <span className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-lg font-extrabold">
-                {offer!.discountType === "percentage"
-                  ? `${offer!.discountValue}% OFF`
-                  : `₹${offer!.discountValue} OFF`}
-              </span>
+
+            <div className="truncate">
+              <p className="text-[11px] font-semibold text-orange-500 leading-none">
+                {offer!.type === "flash_sale"
+                  ? "Flash Sale"
+                  : offer!.type === "category_sale"
+                    ? "Category Sale"
+                    : "Special Offer"}
+              </p>
+
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {lang === "hi" && offer!.titleHi
+                  ? offer!.titleHi
+                  : offer!.title}
+              </p>
+            </div>
+          </div>
+
+          {/* Right */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-md">
+              {offer!.discountType === "percentage"
+                ? `${offer!.discountValue}%`
+                : `₹${offer!.discountValue}`}
+            </span>
+
+            <div className="text-[11px] text-gray-500 font-medium whitespace-nowrap">
               <CountdownTimer endDate={offer!.endDate} />
             </div>
           </div>
