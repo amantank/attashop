@@ -224,14 +224,6 @@ export default function GroceryHome() {
         {/* Desktop Sidebar Overlay */}
 
         {/* Mobile Bottom Navigation */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 flex justify-center">
-          <div className="w-full max-w-md bg-green-500 rounded-t-3xl px-8 py-4 flex justify-between text-white">
-            <NavItem label="Home" active />
-            <NavItem label="Wishlist" />
-            <NavItem label="Orders" />
-            <NavItem label="Profile" />
-          </div>
-        </div>
       </div>
       {/* ── Benefits strip ────────────────────────────────── */}
     </div>
@@ -243,18 +235,6 @@ function Category({ name, icon: Icon }: any) {
     <div className="flex items-center gap-3 bg-gray-100 px-5 py-3 rounded-xl text-sm hover:bg-gray-200 cursor-pointer transition">
       <Icon size={18} className="text-green-600" />
       <span className="font-medium text-stone-700">{name}</span>
-    </div>
-  );
-}
-
-function NavItem({ label, active }: any) {
-  return (
-    <div
-      className={`px-4 py-2 rounded-full text-sm ${
-        active ? "bg-yellow-300 text-black" : ""
-      }`}
-    >
-      {label}
     </div>
   );
 }

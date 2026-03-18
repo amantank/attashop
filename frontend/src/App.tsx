@@ -8,9 +8,9 @@ import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage";
 import OrderHistoryPage from "./pages/OrderHistoryPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
 import OffersPage from "./pages/OffersPage";
 import Navbar from "./components/Navbar";
+import MobileNav from "./components/MobileNav";
 
 export default function App() {
   return (
@@ -36,9 +36,22 @@ export default function App() {
             <Route path="/offers" element={<OffersPage />} />
             {/* <Route path="/admin" element={<AdminDashboardPage />} /> */}
           </Routes>
+          <MobileNav />
         </main>
         <Footer />
       </div>
     </BrowserRouter>
+  );
+}
+
+function NavItem({ label, active }: any) {
+  return (
+    <div
+      className={`px-4 py-2 rounded-full text-sm ${
+        active ? "bg-yellow-300 text-black" : ""
+      }`}
+    >
+      {label}
+    </div>
   );
 }
