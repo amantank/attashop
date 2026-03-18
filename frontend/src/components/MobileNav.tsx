@@ -1,4 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useLanguage } from "../context/LanguageContext";
+import {
+  FireExtinguisher,
+  FlameIcon,
+  HomeIcon,
+  ListOrderedIcon,
+  SubscriptIcon,
+  Wheat,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const GREEN = "#2E9E4F";
 const YELLOW = "#FFD600";
@@ -10,63 +20,22 @@ const CR = 46;
 const DURATION = 460;
 
 const icons: Record<string, JSX.Element> = {
-  Home: (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z" />
-      <path d="M9 21V12h6v9" />
-    </svg>
-  ),
-  Favorite: (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-    </svg>
-  ),
-  Orders: (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M8 7h8M8 12h8M8 17h5" />
-    </svg>
-  ),
-  Profile: (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-    </svg>
-  ),
+  Home: <HomeIcon size={18} />,
+  Products: <Wheat size={18} />,
+  Offers: <FlameIcon size={18} />,
+  Orders: <ListOrderedIcon size={18} />,
+  Subscriptions: <SubscriptIcon size={18} />,
 };
 
-export const routes = [
-  { label: "Home", path: "/" },
-  { label: "Favorite", path: "/favorite" },
-  { label: "Orders", path: "/orders" },
-  { label: "Profile", path: "/profile" },
+export const routes: any = [
+  { label: { en: "Home", hi: "होम" }, path: "/" },
+  { label: { en: "Products", hi: "उत्पाद" }, path: "/products" },
+  { label: { en: "Offers", hi: "ऑफर्स" }, path: "/offers" },
+  { label: { en: "Orders", hi: "मेरे ऑर्डर" }, path: "/my-orders" },
+  {
+    label: { en: "Subscriptions", hi: "सब्सक्रिप्शन्स" },
+    path: "/subscriptions",
+  },
 ];
 
 // ─── Easing ────────────────────────────────────────────────────────────────
@@ -123,7 +92,7 @@ function measureFutureMetrics(
   const ghost = document.createElement("div");
   ghost.style.cssText = `position:fixed;visibility:hidden;pointer-events:none;display:flex;align-items:center;justify-content:space-around;padding:0 16px 6px;width:${wrapWidth}px;height:${BAR_H}px;top:-9999px;left:0;`;
 
-  routes.forEach((r, i) => {
+  routes.forEach((r: any, i: any) => {
     const slot = document.createElement("div");
     slot.style.cssText =
       "display:flex;align-items:center;justify-content:center;";
@@ -153,7 +122,8 @@ export default function BottomNavBar() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<HTMLDivElement>(null);
-
+  const { t, lang } = useLanguage();
+  const navigate = useNavigate();
   // Animation refs — avoid re-renders during animation
   const animRef = useRef<number | null>(null);
   const curAx = useRef(0);
@@ -321,10 +291,13 @@ export default function BottomNavBar() {
           zIndex: 10,
         }}
       >
-        {routes.map((route, i) => (
+        {routes.map((route: any, i: any) => (
           <button
             key={route.label}
-            onClick={() => handlePress(i)}
+            onClick={() => {
+              handlePress(i);
+              navigate(route.path);
+            }}
             style={{
               background: "none",
               border: "none",
@@ -355,9 +328,9 @@ export default function BottomNavBar() {
                 <span
                   style={{ color: "#e53935", display: "flex", flexShrink: 0 }}
                 >
-                  {icons[route.label]}
+                  {icons[route.label.en]}
                 </span>
-                <span>{route.label}</span>
+                <span>{lang === "hi" ? route.label.hi : route.label.en}</span>
               </div>
             ) : (
               <div
@@ -370,7 +343,7 @@ export default function BottomNavBar() {
                   color: "rgba(255,255,255,0.85)",
                 }}
               >
-                {icons[route.label]}
+                {icons[route.label.en]}
               </div>
             )}
           </button>
