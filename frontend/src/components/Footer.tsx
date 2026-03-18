@@ -75,7 +75,7 @@ export default function Footer() {
           </div>
         </div>
       </section>
-      <footer className="bg-white md:border-t border-stone-200 md:mb-[-3em]">
+      <footer className="bg-white md:border-t md:border-stone-200 mb-[3em] md:mb-[-3em]">
         <div className="max-w-7xl mx-auto px-6 py-10 border border-t-[0px]">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-sm text-stone-500">
             {/* Brand */}
