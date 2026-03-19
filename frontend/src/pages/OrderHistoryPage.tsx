@@ -190,18 +190,13 @@ export default function OrderHistoryPage() {
             {/* Top */}
             <div className="flex items-start justify-between">
               <div className="flex gap-3 items-start">
-                <img
-                  src="https://images.unsplash.com/photo-1542838132-92c53300491e"
-                  className="w-12 h-12 rounded-xl object-cover"
-                />
-
                 <div>
                   <p className="text-[15px] font-semibold text-stone-800 leading-tight">
                     {order.products[0]?.productName}
                   </p>
 
                   <p className="text-xs text-stone-500 mt-0.5">
-                    ₹{order.finalAmount.toFixed(0)} ·{" "}
+                    ₹{order.finalAmount.toFixed(0)} {" | "}
                     {order.products[0]?.size || ""}
                   </p>
                 </div>
@@ -217,10 +212,10 @@ export default function OrderHistoryPage() {
               <div>
                 <p className="text-[11px] text-stone-400 flex items-center gap-1">
                   <Clock size={12} />
-                  Estimated Arrival
+                  Time Slot
                 </p>
 
-                <p className="text-sm font-semibold text-stone-800 mt-1">
+                <p className="text-sm font-medium text-stone-800 mt-1">
                   {order.deliverySlot}
                 </p>
               </div>
@@ -255,7 +250,7 @@ export default function OrderHistoryPage() {
             bg-green-500
             py-2.5 text-sm font-semibold
             text-white
-            shadow-[0_4px_10px_rgba(46,158,79,0.25)]
+            
             hover:bg-green-600 transition
           "
               >
