@@ -1,10 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, Globe, Wheat, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useCartStore } from "../store/cartStore";
 import { useLanguage } from "../context/LanguageContext";
 import SearchBar from "./SearchBar";
-
+const sidebarRoutes = [
+  { label: "Home", to: "/" },
+  { label: "Offers", to: "/offers" },
+  { label: "Orders", to: "/orders" },
+  { label: "Subscriptions", to: "/subscriptions" },
+];
 export default function Navbar() {
   const { t, lang, toggleLang } = useLanguage();
   const itemCount = useCartStore((s) => s.itemCount());
@@ -161,21 +166,19 @@ export default function Navbar() {
         >
           {/* Top */}
           <div>
-            <h2 className="text-2xl font-semibold">Fresh Grocery</h2>
+            <h2 className="text-2xl font-semibold">{t("appName")}</h2>
 
             <p className="text-green-100 mt-2 text-sm leading-relaxed">
-              Discover healthy foods and fresh groceries delivered to your door.
+              {t("tagline")}
             </p>
           </div>
 
           {/* Navigation */}
           <div className="space-y-3">
-            <SidebarItem label="Home" active />
-            <SidebarItem label="Wishlist" />
-            <SidebarItem label="Orders" />
-            <SidebarItem label="Profile" />
+            {sidebarRoutes.map((item) => (
+              <SidebarItem key={item.to} {...item} />
+            ))}
           </div>
-
           {/* Footer */}
           <div className="text-xs text-green-100 opacity-80">
             © {new Date().getFullYear()} theaatashop.com
@@ -186,14 +189,19 @@ export default function Navbar() {
   );
 }
 
-function SidebarItem({ label, active }: any) {
+function SidebarItem({ label, to }: any) {
   return (
-    <div
-      className={`px-4 py-3 rounded-xl text-sm cursor-pointer ${
-        active ? "bg-white text-green-600" : "text-green-100 hover:bg-green-600"
-      }`}
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `px-4 py-3 rounded-3xl flex items-center justify-center text-center text-sm cursor-pointer transition ${
+          isActive
+            ? "bg-white text-green-600 shadow-sm"
+            : "text-green-100 hover:bg-green-600"
+        }`
+      }
     >
       {label}
-    </div>
+    </NavLink>
   );
 }

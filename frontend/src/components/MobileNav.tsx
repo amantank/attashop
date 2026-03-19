@@ -31,7 +31,7 @@ export const routes: any = [
   { label: { en: "Home", hi: "होम" }, path: "/" },
   { label: { en: "Products", hi: "उत्पाद" }, path: "/products" },
   { label: { en: "Offers", hi: "ऑफर्स" }, path: "/offers" },
-  { label: { en: "Orders", hi: "मेरे ऑर्डर" }, path: "/my-orders" },
+  { label: { en: "Orders", hi: "मेरे ऑर्डर" }, path: "/orders" },
   {
     label: { en: "Subscriptions", hi: "सब्सक्रिप्शन्स" },
     path: "/subscriptions",

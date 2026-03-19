@@ -567,7 +567,7 @@ border md:shadow-md
                 {/* Quantity + CTA (SAME ROW) */}
                 <div className="flex items-center gap-3">
                   {/* Quantity */}
-                  <div className="flex items-center gap-2 bg-stone-100 md:shadow-lg rounded-full px-2 py-1.5">
+                  <div className="flex items-center gap-2 bg-stone-100 s rounded-full px-2 py-1.5">
                     <button
                       onClick={() => setQuantity((q) => Math.max(0.5, q - 0.5))}
                       className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm active:scale-95"
@@ -602,7 +602,7 @@ border md:shadow-md
                     className={`
                       flex-1 py-3 rounded-3xl text-sm font-semibold 
                       flex items-center justify-center gap-2 
-                      transition-all duration-200 md:shadow-lg
+                      transition-all duration-200 
 
                       ${
                         isOutOfStock

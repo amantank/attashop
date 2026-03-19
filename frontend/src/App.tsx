@@ -43,15 +43,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
-function NavItem({ label, active }: any) {
-  return (
-    <div
-      className={`px-4 py-2 rounded-full text-sm ${
-        active ? "bg-yellow-300 text-black" : ""
-      }`}
-    >
-      {label}
-    </div>
-  );
-}
