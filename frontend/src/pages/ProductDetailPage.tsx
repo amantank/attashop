@@ -161,8 +161,8 @@ export default function ProductDetailPage() {
       {hasOffer && (
         <div
           className="mb-4 flex items-center justify-between gap-3 
-    bg-orange-50 border border-orange-200 
-    rounded-xl px-3 py-2 shadow-sm"
+            bg-orange-50 border border-orange-200 
+            rounded-xl px-3 py-2 shadow-sm"
         >
           {/* Left */}
           <div className="flex items-center gap-2 min-w-0">
@@ -205,21 +205,32 @@ export default function ProductDetailPage() {
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         {/* Image */}
         <div
-          className={`relative aspect-square rounded-3xl overflow-hidden bg-amber-50 shadow-lg ${hasOffer ? "ring-2 ring-red-300 ring-offset-2" : ""}`}
+          className={`relative aspect-square rounded-3xl overflow-hidden 
+  bg-gradient-to-br from-green-50 to-amber-50 shadow-md 
+  ${hasOffer ? "shadow-lg" : ""}`}
         >
           <img
             src={product.images?.[0] || PLACEHOLDER}
             alt={name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
-          {/* Sale badge on image */}
+
+          {/* Subtle Offer Badge */}
           {hasOffer && (
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
-              <span className="bg-red-500 text-white text-sm font-extrabold px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 animate-offer-pulse">
-                <Zap size={14} />
+            <div className="absolute top-4 left-4">
+              <span
+                className="
+        backdrop-blur-md bg-white/70 
+        text-green-700 text-xs font-semibold 
+        px-3 py-1 rounded-full 
+        shadow-sm border border-white/40
+        flex items-center gap-1
+      "
+              >
+                <Zap size={12} className="text-green-600" />
                 {offer!.discountType === "percentage"
-                  ? `−${offer!.discountValue}%`
-                  : `−₹${offer!.discountValue}`}
+                  ? `${offer!.discountValue}% OFF`
+                  : `₹${offer!.discountValue} OFF`}
               </span>
             </div>
           )}
@@ -227,51 +238,128 @@ export default function ProductDetailPage() {
 
         {/* Info */}
         <div className="flex flex-col gap-4">
-          <div>
-            <span className="pill-amber text-xs mb-2 inline-block">
+          <div className="w-full max-w-2xl lg:max-w-3xl space-y-1.5 lg:space-y-2">
+            {/* Category */}
+            <span
+              className="inline-block px-3 py-1 rounded-full 
+    bg-amber-100 text-amber-700 text-[11px] font-medium tracking-wide"
+            >
               {product.categoryId}
             </span>
-            <h1 className="text-2xl font-extrabold text-stone-900 leading-tight">
-              {name}
-            </h1>
+
+            {/* Title + Price */}
+            <div className="flex items-start justify-between gap-4">
+              <h1
+                className="text-[18px] sm:text-[20px] lg:text-[22px] 
+      font-semibold text-stone-900 leading-snug"
+              >
+                {name}
+              </h1>
+
+              {/* Price */}
+              <div className="text-right shrink-0">
+                <div className="flex items-baseline justify-end gap-1.5">
+                  <span
+                    className={`text-[18px] sm:text-[20px] font-semibold 
+          ${hasOffer ? "text-green-600" : "text-stone-900"}`}
+                  >
+                    {selectedVariant && selectedVariant.weight > 0 && (
+                      <p>
+                        ₹
+                        {hasOffer
+                          ? Math.round(effectivePrice / selectedVariant.weight)
+                          : product.pricing.basePrice}{" "}
+                        / {product.pricing.unit}
+                        {hasOffer && (
+                          <span className="text-stone-400 line-through ml-2">
+                            ₹{product.pricing.basePrice} /{" "}
+                            <span className="text-[18px] text-stone-400 font-medium">
+                              {product.pricing.unit}
+                            </span>
+                          </span>
+                        )}
+                      </p>
+                    )}
+                  </span>
+                </div>
+
+                {/* Strike + Discount */}
+                {(strikePrice > 0 && strikePrice !== effectivePrice) ||
+                discountPct > 0 ? (
+                  <div className="flex items-center justify-end gap-2 mt-0.5">
+                    {strikePrice > 0 && strikePrice !== effectivePrice && (
+                      <span className="text-[12px] text-stone-400 line-through">
+                        ₹{strikePrice}
+                      </span>
+                    )}
+
+                    {discountPct > 0 && (
+                      <span
+                        className="text-[10px] font-medium px-2 py-0.5 rounded-full 
+              bg-green-100 text-green-700"
+                      >
+                        {discountPct}% OFF
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            {/* Description */}
             {description && (
-              <p className="text-stone-500 text-sm mt-2 leading-relaxed">
+              <p
+                className="text-stone-500 text-[13px] sm:text-[14px] 
+      leading-relaxed max-w-prose"
+              >
                 {description}
               </p>
             )}
           </div>
 
+          {/* Specifications */}
+          {((lang === "hi" &&
+            product.specificationsHi &&
+            Object.keys(product.specificationsHi).length > 0) ||
+            (product.specifications &&
+              Object.keys(product.specifications).length > 0)) && (
+            <div className="mt-6 pt-5 border-t border-stone-100">
+              {/* Heading */}
+              <h3 className="text-[15px] sm:text-[16px] font-semibold text-stone-900 mb-3">
+                {t("specifications") ||
+                  (lang === "hi" ? "विशेष विवरण" : "Specifications")}
+              </h3>
+
+              {/* Specs */}
+              <div className="divide-y divide-stone-100">
+                {Object.entries(
+                  lang === "hi" &&
+                    product.specificationsHi &&
+                    Object.keys(product.specificationsHi).length > 0
+                    ? product.specificationsHi
+                    : product.specifications || {},
+                ).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex items-start justify-between py-2.5 gap-4"
+                  >
+                    {/* Key */}
+                    <span className="text-[12px] sm:text-[13px] text-stone-500 font-medium">
+                      {key}
+                    </span>
+
+                    {/* Value */}
+                    <span className="text-[13px] sm:text-[14px] text-stone-800 font-medium text-right">
+                      {String(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* ─── Price Section (offer-aware) ───────────────── */}
           <div>
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <span
-                className={`text-3xl font-extrabold ${hasOffer ? "text-red-600" : "text-stone-900"}`}
-              >
-                ₹{effectivePrice}
-              </span>
-              <span className="text-sm font-semibold text-stone-500">
-                /{" "}
-                {selectedVariant && selectedVariant.weight > 0
-                  ? `${selectedVariant.weight}${selectedVariant.unit}`
-                  : product.pricing.unit}
-              </span>
-
-              {/* Strikethrough: show original price if offer, or MRP if MRP discount */}
-              {strikePrice > 0 && strikePrice !== effectivePrice && (
-                <span className="text-lg text-stone-400 line-through">
-                  ₹{strikePrice}
-                </span>
-              )}
-              {discountPct > 0 && (
-                <span
-                  className={`text-xs font-bold px-2.5 py-1 rounded-full ${hasOffer ? "bg-red-100 text-red-700" : "pill-amber"}`}
-                >
-                  {hasOffer && <Zap size={10} className="inline mr-0.5" />}
-                  {discountPct}% {t("discount")}
-                </span>
-              )}
-            </div>
-
             {/* Savings callout for offers */}
             {hasOffer && (
               <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
@@ -301,21 +389,43 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Stock */}
-          <div>
+          <div className="flex items-center">
             {isOutOfStock ? (
-              <span className="pill-red">{t("outOfStock")}</span>
+              <span
+                className="inline-flex items-center gap-1.5 
+      px-2.5 py-1 rounded-full 
+      bg-red-50 text-red-600 
+      text-[11px] sm:text-xs font-medium"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                {t("outOfStock")}
+              </span>
             ) : (
-              <span className="pill-green">
-                {t("inStock")} ({stockCount} units)
+              <span
+                className="inline-flex items-center gap-1.5 
+      px-2.5 py-1 rounded-full 
+      bg-green-50 text-green-600 
+      text-[11px] sm:text-xs font-medium"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                {t("inStock")}
+                <span className="text-stone-400 font-normal">
+                  ({stockCount})
+                </span>
               </span>
             )}
           </div>
 
           {/* ─── Variant selector (offer-aware prices) ─────── */}
           {hasVariants && (
-            <div>
-              <p className="label">{t("selectVariant")}</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="mt-4">
+              {/* Label */}
+              <p className="text-[13px] font-medium text-stone-600 mb-2">
+                {t("selectVariant")}
+              </p>
+
+              {/* Variants */}
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                 {validVariants.map((v, i) => {
                   const truePrice =
                     v.price > 0 ? v.price : product.pricing.basePrice;
@@ -328,39 +438,52 @@ export default function ProductDetailPage() {
                       key={v._id || i}
                       onClick={() => setSelectedVariantId(v._id)}
                       disabled={isOutOfStock}
-                      className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all ${
-                        isSelected
-                          ? hasOffer
-                            ? "border-red-500 bg-red-500 text-white shadow-md"
-                            : "border-amber-500 bg-amber-500 text-white shadow-md"
-                          : isOutOfStock
-                            ? "border-stone-200 bg-stone-50 text-stone-300 cursor-not-allowed"
-                            : "border-stone-200 bg-white text-stone-700 hover:border-amber-400"
-                      }`}
+                      className={`
+              flex flex-col items-start justify-center
+              px-3 py-2 rounded-xl 
+              border transition-all duration-200
+              min-w-[110px]
+
+              ${
+                isSelected
+                  ? "bg-green-50 border-green-400 shadow-sm"
+                  : isOutOfStock
+                    ? "bg-stone-50 border-stone-200 text-stone-300 cursor-not-allowed"
+                    : "bg-white border-stone-200 hover:border-green-300 hover:bg-green-50/40"
+              }
+            `}
                     >
-                      <span>
+                      {/* Weight */}
+                      <span
+                        className={`text-[13px] font-medium ${
+                          isSelected ? "text-green-700" : "text-stone-800"
+                        }`}
+                      >
                         {v.weight > 0 ? `${v.weight}${v.unit}` : "Loose"}
                       </span>
-                      <span className="block text-xs font-semibold opacity-80">
+
+                      {/* Price */}
+                      <div className="flex items-center gap-1 mt-0.5">
                         {hasOffer ? (
                           <>
                             <span
-                              className={
-                                isSelected ? "text-white" : "text-red-600"
-                              }
+                              className={`text-[13px] font-semibold ${
+                                isSelected ? "text-green-700" : "text-green-600"
+                              }`}
                             >
                               ₹{varOfferPrice}
                             </span>
-                            <span
-                              className={`line-through ml-1 ${isSelected ? "text-white/60" : "text-stone-400"}`}
-                            >
+
+                            <span className="text-[11px] text-stone-400 line-through">
                               ₹{truePrice}
                             </span>
                           </>
                         ) : (
-                          `₹${truePrice}`
+                          <span className="text-[13px] font-semibold text-stone-800">
+                            ₹{truePrice}
+                          </span>
                         )}
-                      </span>
+                      </div>
                     </button>
                   );
                 })}
@@ -368,182 +491,202 @@ export default function ProductDetailPage() {
             </div>
           )}
 
-          {/* Quantity */}
-          <div>
-            <p className="label">{t("quantity")}</p>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(0.5, q - 0.5))}
-                  className="stepper-btn"
-                >
-                  <Minus size={16} />
-                </button>
-                <input
-                  type="number"
-                  step="0.5"
-                  min="0.5"
-                  className="w-14 text-center font-extrabold text-lg bg-transparent border-b-2 border-stone-200 focus:border-amber-500 outline-none transition"
-                  value={quantity}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    if (!isNaN(val) && val > 0) setQuantity(val);
-                  }}
-                />
-                <button
-                  onClick={() => setQuantity((q) => q + 0.5)}
-                  className="stepper-btn"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-              <div className="text-sm font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
-                Total: {totalAmountString}
-              </div>
-            </div>
+          <div
+            className="
+  fixed bottom-0 left-0 right-0 z-50
+  px-4 py-6 pb-16 md:pb-6
 
-            {/* Total price with offer */}
-            {hasOffer && quantity > 0 && (
-              <div className="mt-2 text-sm font-bold text-red-600 flex items-center gap-1.5">
-                <Zap size={14} />
-                {lang === "hi"
-                  ? `ऑफर मूल्य: ₹${effectivePrice * quantity}`
-                  : `Offer Total: ₹${effectivePrice * quantity}`}
-                <span className="text-stone-400 line-through font-normal ml-1">
-                  ₹{displayPrice * quantity}
-                </span>
-              </div>
-            )}
-          </div>
+  border-stone-200
+border md:shadow-md
+  bg-white 
 
-          {/* Subscribe toggle */}
-          <div className="border border-amber-200 rounded-2xl p-4 bg-amber-50">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div
-                onClick={() => setSubscribeMode((m) => !m)}
-                className={`w-11 h-6 rounded-full relative transition-colors ${subscribeMode ? "bg-amber-500" : "bg-stone-200"}`}
-              >
-                <div
-                  className={`w-5 h-5 bg-white rounded-full shadow absolute top-0.5 transition-transform ${subscribeMode ? "translate-x-5" : "translate-x-0.5"}`}
-                />
-              </div>
-              <span className="font-semibold text-stone-800 text-sm">
-                {t("subscribeProduct")}
-              </span>
-            </label>
+  w-full md:max-w-2xl
+   md:left-1/2 md:right-auto md:-translate-x-1/2
+  md:rounded-t-3xl
+"
+          >
+            <div>
+              <div className="space-y-3">
+                {/* Subscribe Toggle */}
+                <div className="flex md:hidden items-center justify-between bg-stone-50 rounded-xl px-3 py-2">
+                  <span className="text-sm text-stone-700 font-medium">
+                    {t("subscribeProduct")}
+                  </span>
 
-            {subscribeMode && (
-              <div className="mt-3 animate-fade-in-up space-y-3">
-                <p className="label">{t("subscriptionPlan")}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {freqOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setFrequency(opt.value)}
-                      className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${
-                        frequency === opt.value
-                          ? "border-amber-500 bg-amber-500 text-white"
-                          : "border-stone-200 bg-white text-stone-600"
+                  <div
+                    onClick={() => setSubscribeMode((m) => !m)}
+                    className={`w-10 h-5 rounded-full relative cursor-pointer transition ${
+                      subscribeMode ? "bg-green-500" : "bg-stone-300"
+                    }`}
+                  >
+                    <div
+                      className={`w-4 h-4 bg-white rounded-full shadow absolute top-0.5 transition ${
+                        subscribeMode ? "translate-x-5" : "translate-x-0.5"
                       }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                {frequency === "custom" && (
-                  <div className="bg-stone-50 p-3 rounded-xl border border-stone-200 animate-fade-in flex items-center gap-3">
-                    <span className="text-sm text-stone-600 font-medium">
-                      Deliver every
-                    </span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="90"
-                      className="input w-20 py-1.5 px-3 text-center !text-sm"
-                      value={customDays || ""}
-                      placeholder="e.g. 8"
-                      onChange={(e) =>
-                        setCustomDays(parseInt(e.target.value) || 0)
-                      }
                     />
-                    <span className="text-sm text-stone-600 font-medium">
-                      days
-                    </span>
+                  </div>
+                </div>
+
+                {/* Subscription Options */}
+                {subscribeMode && (
+                  <div className="space-y-2 md:hidden">
+                    <div className="grid grid-cols-3 gap-2">
+                      {freqOptions.map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => setFrequency(opt.value)}
+                          className={`py-1.5 rounded-lg text-[11px] font-medium transition ${
+                            frequency === opt.value
+                              ? "bg-green-500 text-white"
+                              : "bg-stone-100 text-stone-600"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {frequency === "custom" && (
+                      <div className="flex items-center gap-2 text-xs text-stone-600">
+                        Every
+                        <input
+                          type="number"
+                          min="1"
+                          max="90"
+                          value={customDays || ""}
+                          onChange={(e) =>
+                            setCustomDays(parseInt(e.target.value) || 0)
+                          }
+                          className="w-14 text-center bg-white border border-stone-200 rounded-md py-1"
+                        />
+                        days
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </div>
+                {/* Quantity + CTA (SAME ROW) */}
+                <div className="flex items-center gap-3">
+                  {/* Quantity */}
+                  <div className="flex items-center gap-2 bg-stone-100 md:shadow-lg rounded-full px-2 py-1.5">
+                    <button
+                      onClick={() => setQuantity((q) => Math.max(0.5, q - 0.5))}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm active:scale-95"
+                    >
+                      <Minus size={14} />
+                    </button>
 
-          {/* CTA */}
-          <div className="flex flex-col gap-3 mt-2">
-            {subscribeMode ? (
-              <button
-                onClick={handleSubscribe}
-                disabled={isOutOfStock}
-                className={`btn-primary py-4 text-base ${isOutOfStock ? "opacity-50 cursor-not-allowed" : ""}`}
-              >
-                <Bell size={18} />
-                {t("addSubscription")}
-              </button>
-            ) : (
-              <button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className={`py-4 text-base font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.97] ${
-                  isOutOfStock
-                    ? "bg-stone-300 text-white cursor-not-allowed opacity-50"
-                    : hasOffer
-                      ? "bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 shadow-red-200"
-                      : "bg-amber-500 text-white hover:bg-amber-600 shadow-amber-200"
-                }`}
-              >
-                <ShoppingCart size={18} />
-                {isOutOfStock
-                  ? t("outOfStock")
-                  : hasOffer
-                    ? lang === "hi"
-                      ? `₹${effectivePrice * quantity} में कार्ट में डालें`
-                      : `Add to Cart — ₹${effectivePrice * quantity}`
-                    : t("addToCart")}
-              </button>
-            )}
-          </div>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0.5"
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val) && val > 0) setQuantity(val);
+                      }}
+                      className="w-10 text-center text-sm font-medium bg-transparent outline-none"
+                    />
 
-          {/* Specifications */}
-          {((lang === "hi" &&
-            product.specificationsHi &&
-            Object.keys(product.specificationsHi).length > 0) ||
-            (product.specifications &&
-              Object.keys(product.specifications).length > 0)) && (
-            <div className="mt-6 border-t border-stone-100 pt-6">
-              <h3 className="text-lg font-bold text-stone-900 mb-4">
-                {t("specifications") ||
-                  (lang === "hi" ? "विशेष विवरण" : "Specifications")}
-              </h3>
-              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                {Object.entries(
-                  lang === "hi" &&
-                    product.specificationsHi &&
-                    Object.keys(product.specificationsHi).length > 0
-                    ? product.specificationsHi
-                    : product.specifications || {},
-                ).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="flex flex-col bg-stone-50 p-3 rounded-xl border border-stone-100"
-                  >
-                    <span className="text-stone-500 font-medium text-xs uppercase tracking-wider mb-1">
-                      {key}
-                    </span>
-                    <span className="text-stone-800 font-semibold">
-                      {String(value)}
-                    </span>
+                    <button
+                      onClick={() => setQuantity((q) => q + 0.5)}
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm active:scale-95"
+                    >
+                      <Plus size={14} />
+                    </button>
                   </div>
-                ))}
+
+                  {/* CTA BUTTON */}
+                  <button
+                    onClick={subscribeMode ? handleSubscribe : handleAddToCart}
+                    disabled={isOutOfStock}
+                    className={`
+                      flex-1 py-3 rounded-3xl text-sm font-semibold 
+                      flex items-center justify-center gap-2 
+                      transition-all duration-200 md:shadow-lg
+
+                      ${
+                        isOutOfStock
+                          ? "bg-stone-300 text-white opacity-50"
+                          : subscribeMode
+                            ? "bg-green-600 text-white hover:bg-green-700"
+                            : "bg-green-500 text-white hover:bg-green-600"
+                      }
+                    `}
+                  >
+                    {subscribeMode ? (
+                      <Bell size={16} />
+                    ) : (
+                      <ShoppingCart size={16} />
+                    )}
+
+                    {isOutOfStock
+                      ? t("outOfStock")
+                      : subscribeMode
+                        ? t("addSubscription")
+                        : `Add — ₹${effectivePrice * quantity} | ${totalAmountString}`}
+                  </button>
+                  <div>
+                    <div className="flex md:block hidden items-center justify-between bg-stone-50 rounded-xl px-3 py-2">
+                      <span className="text-sm text-stone-700 font-medium">
+                        {t("subscribeProduct")}
+                      </span>
+
+                      <div
+                        onClick={() => setSubscribeMode((m) => !m)}
+                        className={`w-10 h-5 rounded-full relative cursor-pointer transition ${
+                          subscribeMode ? "bg-green-500" : "bg-stone-300"
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 bg-white rounded-full shadow absolute top-0.5 transition ${
+                            subscribeMode ? "translate-x-5" : "translate-x-0.5"
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Subscription Options */}
+                    {subscribeMode && (
+                      <div className="space-y-2 md:block hidden">
+                        <div className="grid grid-cols-3 gap-2">
+                          {freqOptions.map((opt) => (
+                            <button
+                              key={opt.value}
+                              onClick={() => setFrequency(opt.value)}
+                              className={`py-1.5 rounded-lg text-[11px] font-medium transition ${
+                                frequency === opt.value
+                                  ? "bg-green-500 text-white"
+                                  : "bg-stone-100 text-stone-600"
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {frequency === "custom" && (
+                          <div className="flex items-center gap-2 text-xs text-stone-600">
+                            Every
+                            <input
+                              type="number"
+                              min="1"
+                              max="90"
+                              value={customDays || ""}
+                              onChange={(e) =>
+                                setCustomDays(parseInt(e.target.value) || 0)
+                              }
+                              className="w-14 text-center bg-white border border-stone-200 rounded-md py-1"
+                            />
+                            days
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
