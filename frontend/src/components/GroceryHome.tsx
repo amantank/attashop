@@ -28,27 +28,6 @@ import toast from "react-hot-toast";
 import ProductsPage from "../pages/ProductsPage";
 import HeroBanner from "./HeroBanner";
 
-const banners = [
-  {
-    title: "Extra 15% OFF",
-    subtitle: "Superb Spreads",
-    tag: "LIMITED TIME ONLY",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e",
-  },
-  {
-    title: "Fresh Vegetables",
-    subtitle: "Farm to Home",
-    tag: "NEW ARRIVAL",
-    image: "https://images.unsplash.com/photo-1610832958506-aa56368176cf",
-  },
-  {
-    title: "Healthy Fruits",
-    subtitle: "Natural Energy",
-    tag: "TODAY SPECIAL",
-    image: "https://images.unsplash.com/photo-1619566636858-adf3ef46400b",
-  },
-];
-
 const defaultCategories = [
   { name: "Whole Wheat Flour", nameHi: "आटा", icon: Wheat },
   { name: "Gram Flour", nameHi: "बेसन", icon: CookingPot },
