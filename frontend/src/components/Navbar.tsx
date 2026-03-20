@@ -1,20 +1,24 @@
+// frontend/src/components/Navbar.tsx
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ShoppingCart, Menu, X, Globe, Wheat, ArrowRight } from "lucide-react";
+import { ShoppingCart, Menu, X, Globe } from "lucide-react";
 import { useState } from "react";
 import { useCartStore } from "../store/cartStore";
 import { useLanguage } from "../context/LanguageContext";
 import SearchBar from "./SearchBar";
+
 const sidebarRoutes = [
   { label: "Home", to: "/" },
   { label: "Offers", to: "/offers" },
   { label: "Orders", to: "/orders" },
   { label: "Subscriptions", to: "/subscriptions" },
 ];
+
 export default function Navbar() {
   const { t, lang, toggleLang } = useLanguage();
   const itemCount = useCartStore((s) => s.itemCount());
+  const openCartDrawer = useCartStore((s) => s.openCartDrawer); // 👈 new
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navLinks = [
     { to: "/products", label: t("products") },
@@ -22,21 +26,22 @@ export default function Navbar() {
     { to: "/orders", label: t("orders") },
     { to: "/subscriptions", label: t("subscriptions") },
   ];
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="bg-white md:border border-stone-200 ">
+    <div className="bg-white md:border border-stone-200">
       <div className="max-w-7xl mx-auto px-6 py-4 md:py-6 md:border border-b-[0px]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div>
               <p className="text-sm text-gray-400">The</p>
-              <p className="font-semibold"> {t("appName")}</p>
+              <p className="font-semibold">{t("appName")}</p>
             </div>
           </div>
 
           <div className="md:flex hidden items-center gap-4">
             <SearchBar />
           </div>
+
           <div className="flex items-center gap-2">
             {/* Lang toggle */}
             <button
@@ -47,9 +52,9 @@ export default function Navbar() {
               {lang === "hi" ? "EN" : "हि"}
             </button>
 
-            {/* Cart */}
+            {/* Cart — now opens drawer 👇 */}
             <button
-              onClick={() => navigate("/cart")}
+              onClick={openCartDrawer}
               className="relative p-2.5 rounded-full bg-green-500 text-white hover:bg-amber-600 transition-colors shadow-md"
             >
               <ShoppingCart size={15} />
@@ -60,7 +65,7 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Right Sidebar (Desktop only) */}
+            {/* Right Sidebar toggle (Desktop) */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition"
@@ -76,6 +81,7 @@ export default function Navbar() {
               {open ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
+
           {/* Mobile Menu Overlay */}
           <div
             className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${
@@ -102,12 +108,10 @@ export default function Navbar() {
                   <h2 className="text-lg font-semibold text-stone-900 tracking-tight">
                     {lang === "hi" ? "मेनू" : "Menu"}
                   </h2>
-
                   <p className="text-xs text-stone-400">
                     {lang === "hi" ? "नेविगेशन" : "Navigation"}
                   </p>
                 </div>
-
                 <button
                   onClick={() => setOpen(false)}
                   className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-stone-100 text-stone-500 transition"
@@ -118,7 +122,6 @@ export default function Navbar() {
 
               {/* Menu Content */}
               <div className="flex-1 overflow-y-auto px-4 py-4">
-                {/* Main Links */}
                 <div className="space-y-1">
                   {navLinks.map((l) => (
                     <Link
@@ -130,15 +133,12 @@ export default function Navbar() {
                       <span className="text-[15px] font-medium text-stone-800 group-hover:text-amber-700">
                         {l.label}
                       </span>
-
                       <span className="text-stone-300 group-hover:text-amber-400 text-sm">
                         →
                       </span>
                     </Link>
                   ))}
                 </div>
-
-                {/* Divider */}
                 <div className="my-5 border-t border-stone-100" />
               </div>
 
@@ -151,6 +151,7 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+
         {sidebarOpen && (
           <div
             className="hidden lg:block fixed inset-0 z-30"
@@ -164,22 +165,17 @@ export default function Navbar() {
             sidebarOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          {/* Top */}
           <div>
             <h2 className="text-2xl font-semibold">{t("appName")}</h2>
-
             <p className="text-green-100 mt-2 text-sm leading-relaxed">
               {t("tagline")}
             </p>
           </div>
-
-          {/* Navigation */}
           <div className="space-y-3">
             {sidebarRoutes.map((item) => (
               <SidebarItem key={item.to} {...item} />
             ))}
           </div>
-          {/* Footer */}
           <div className="text-xs text-green-100 opacity-80">
             © {new Date().getFullYear()} theaatashop.com
           </div>
@@ -189,7 +185,7 @@ export default function Navbar() {
   );
 }
 
-function SidebarItem({ label, to }: any) {
+function SidebarItem({ label, to }: { label: string; to: string }) {
   return (
     <NavLink
       to={to}
