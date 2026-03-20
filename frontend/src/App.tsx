@@ -19,7 +19,7 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen flex flex-col bg-white">
         <Navbar />
-        <CartDrawer /> {/* 👈 mounted once, works everywhere */}
+        <CartDrawer />
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<HomePage />} />

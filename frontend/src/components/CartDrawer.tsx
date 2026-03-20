@@ -82,8 +82,8 @@ export default function CartDrawer() {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
           <div className="flex items-center gap-2">
-            <ShoppingBag size={20} className="text-amber-500" />
-            <h2 className="text-lg font-extrabold text-stone-900">
+            <ShoppingBag size={20} className="text-green-500" />
+            <h2 className="text-lg font-medium text-stone-900">
               {t("yourCart")}
             </h2>
           </div>
@@ -111,7 +111,7 @@ export default function CartDrawer() {
                   closeCartDrawer();
                   navigate("/products");
                 }}
-                className="mt-2 btn-primary text-sm px-5 py-2.5"
+                className="mt-2 bg-green-500 text-sm px-5 py-2.5"
               >
                 {t("continueShopping")}
               </button>
@@ -132,7 +132,7 @@ export default function CartDrawer() {
                   closeCartDrawer();
                   navigate("/products");
                 }}
-                className="inline-flex items-center gap-1 text-amber-600 text-sm font-semibold mt-3 hover:gap-2 transition-all"
+                className="inline-flex items-center gap-1 text-green-600 text-sm font-medium mt-3 hover:gap-2 transition-all"
               >
                 ← {t("continueShopping")}
               </button>
@@ -147,14 +147,14 @@ export default function CartDrawer() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-stone-500">
                 <span>{t("subtotal")}</span>
-                <span className="font-semibold text-stone-800">
+                <span className="font-medium text-stone-800">
                   ₹{sub.toFixed(0)}
                 </span>
               </div>
               <div className="flex justify-between text-stone-500">
                 <span>{t("deliveryCharge")}</span>
                 <span
-                  className={`font-semibold ${
+                  className={`font-medium ${
                     deliveryCharge === 0 ? "text-green-600" : "text-stone-800"
                   }`}
                 >
@@ -163,8 +163,8 @@ export default function CartDrawer() {
               </div>
               <div className="h-px bg-stone-100" />
               <div className="flex justify-between">
-                <span className="font-bold text-stone-900">{t("total")}</span>
-                <span className="font-extrabold text-amber-600 text-lg">
+                <span className="font-medium text-stone-900">{t("total")}</span>
+                <span className="font-semibold text-green-600 text-lg">
                   ₹{total().toFixed(0)}
                 </span>
               </div>
@@ -173,9 +173,24 @@ export default function CartDrawer() {
             {/* Checkout button */}
             <button
               onClick={handleCheckout}
-              className="btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2"
+              className="
+              w-full py-3.5 px-4
+              flex items-center justify-center gap-2
+
+              rounded-3xl
+              bg-green-500 text-white
+
+              text-sm md:text-base font-semibold
+
+              shadow-[0_6px_16px_rgba(46,158,79,0.25)]
+              hover:bg-green-600
+              active:scale-[0.98]
+
+              transition-all duration-200
+            "
             >
-              {t("proceedToCheckout")} <ArrowRight size={18} />
+              {t("proceedToCheckout")}
+              <ArrowRight size={18} className="translate-x-[1px]" />
             </button>
           </div>
         )}
