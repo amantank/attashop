@@ -17,7 +17,7 @@ export function ProductCardSkeleton() {
 export function Loader({ text = "Loading…" }: { text?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-3 text-stone-400">
-      <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-green-400 border-t-transparent rounded-full animate-spin" />
       <p className="text-sm font-medium">{text}</p>
     </div>
   );
@@ -61,7 +61,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
       {icon && <div className="text-5xl mb-2">{icon}</div>}
-      <h3 className="text-lg font-bold text-stone-800">{title}</h3>
+      <h3 className="text-lg font-medium text-stone-800">{title}</h3>
       {description && (
         <p className="text-sm text-stone-500 max-w-xs">{description}</p>
       )}
