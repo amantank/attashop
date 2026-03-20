@@ -7,7 +7,6 @@ import {
   Apple,
   ChevronRight,
   CookingPot,
-  CreditCard,
   Leaf,
   Milk,
   Package,
@@ -19,7 +18,6 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "../api/categories";
-import Footer from "./Footer";
 import { getProducts } from "../api/products";
 import { ProductCardSkeleton } from "./Loader";
 import ProductCard from "./ProductCard";
@@ -28,6 +26,7 @@ import { buildRepeatCartItems, getOrdersByPhone } from "../api/orders";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
 import ProductsPage from "../pages/ProductsPage";
+import HeroBanner from "./HeroBanner";
 
 const banners = [
   {
@@ -108,8 +107,7 @@ export default function GroceryHome() {
           <div className="md:hidden  flex gap-3">
             <SearchBar />
           </div>
-
-          <BannerCarousel />
+          <HeroBanner />
           {lastOrder && (
             <section className="max-w-7xl mx-auto px-4 mt-6">
               <div
@@ -253,89 +251,6 @@ function Category({ name, icon: Icon }: any) {
     <div className="flex items-center gap-3 bg-gray-100 px-5 py-3 rounded-xl text-sm hover:bg-gray-200 cursor-pointer transition">
       <Icon size={18} className="text-green-600" />
       <span className="font-medium text-stone-700">{name}</span>
-    </div>
-  );
-}
-
-export function BannerCarousel() {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-
-  useEffect(() => {
-    if (paused) return;
-
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % banners.length);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [paused]);
-
-  return (
-    <div
-      className="mt-8 max-w-5xl mx-auto"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      {/* Desktop stacked cards */}
-      <div className="relative h-60 lg:h-72 overflow-visible mt-2 mb-2">
-        {banners.map((b, i) => {
-          const offset = (i - index + banners.length) % banners.length;
-
-          return (
-            <div
-              key={i}
-              className={`absolute w-full will-change-transform transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                offset === 0
-                  ? "z-30 opacity-100 translate-x-0 scale-100"
-                  : offset === 1
-                    ? "z-20 opacity-80 translate-x-[20px] lg:translate-x-[40px] scale-95"
-                    : "z-10 opacity-60 translate-x-[40px] lg:translate-x-[80px] scale-90"
-              }`}
-            >
-              <BannerCard banner={b} />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Controls */}
-      <div className="flex justify-center gap-2 mt-8 md:mt-0">
-        {banners.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            className={`h-2 rounded-full transition-all ${
-              i === index ? "w-6 bg-green-500" : "w-2 bg-gray-300"
-            }`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function BannerCard({ banner }: any) {
-  return (
-    <div className="bg-lime-200 rounded-3xl p-8 relative overflow-hidden flex items-center h-64">
-      <div className="max-w-md">
-        <p className="text-xs text-gray-600">{banner.tag}</p>
-
-        <h2 className="text-2xl lg:text-3xl font-semibold mt-2 leading-snug">
-          {banner.title}
-          <br />
-          {banner.subtitle}
-        </h2>
-
-        <button className="mt-5 bg-green-500 text-white px-6 py-2 rounded-full text-sm">
-          Buy Now
-        </button>
-      </div>
-
-      <img
-        src={banner.image}
-        className="absolute right-0 bottom-0 w-40 lg:w-60"
-      />
     </div>
   );
 }
